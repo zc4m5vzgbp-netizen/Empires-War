@@ -5,7 +5,7 @@ import { STARTING_STOCKPILE } from './content/economy.ts';
 import { createController } from './input/controller.ts';
 import { INPUT } from './input/gestures.ts';
 import { bindPointerInput } from './input/pointerInput.ts';
-import { cloud, listCloudSaves, login, logout, saveCloud, signedIn } from './persistence/cloudStore.ts';
+import { cloud, emailLogin, verifyEmailCode, listCloudSaves, login, logout, saveCloud, signedIn } from './persistence/cloudStore.ts';
 import { decodeSave, encodeSave } from './persistence/saveFormat.ts';
 
 import { centerCameraOn, createCameraModel, panCamera, worldToScreen, zoomCameraAt } from './render/cameraModel.ts';
@@ -281,6 +281,8 @@ render(
       save: () => void save(),
       load: () => void load(),
       login: (provider) => void login(provider).catch(e => toast(String(e), 'error')),
+      emailLogin: (email) => void emailLogin(email).then(() => toast('Revisa tu correo para acceder.')).catch(e => toast(String(e), 'error')),
+      verifyEmailCode: (email, code) => void verifyEmailCode(email, code).then(() => void initCloud()).catch(e => toast(String(e), 'error')),
       logout: () => void logout().catch(e => toast(String(e), 'error')),
       chooseSlot: (id) => void loadSlot(id),
       newSlot: () => {
