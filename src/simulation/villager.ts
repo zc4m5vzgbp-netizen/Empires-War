@@ -4,7 +4,7 @@ import { advanceConstruction } from './construction.ts';
 import { deposit } from './economy.ts';
 import { buildOccupancy, distanceToRect, footprintOf, isAdjacentToRect, isWalkable, type Occupancy } from './grid.ts';
 import { pathToAdjacent, pathToTile } from './pathfinding.ts';
-import type { Building, EntityId, ResourceNode, Villager } from './types.ts';
+import type { Building, EntityId, ResourceNode, Tile, Villager } from './types.ts';
 import { entityList, getEntity, removeEntity, type WorldState } from './world.ts';
 
 // Comportamiento de los aldeanos, un tick cada vez.
@@ -66,12 +66,22 @@ function walk(v: Villager, occ: Occupancy): 'moving' | 'arrived' | 'blocked' {
   return v.path.length === 0 ? 'arrived' : 'moving';
 }
 
+/**
+ * Si el camino calculado está vacío pero el aldeano quedó entre dos casillas (recibió la orden a mitad
+ * de un paso), primero camina al centro de su casilla. Sin esto se quedaba quieto para siempre.
+ */
+export function centeredPath(v: Villager, path: Tile[]): Tile[] {
+  const t = tileOf(v);
+  const centered = Math.abs(v.x - t.x) < 1e-6 && Math.abs(v.y - t.y) < 1e-6;
+  return path.length === 0 && !centered ? [t] : path;
+}
+
 /** Asegura un camino hacia un rectángulo; devuelve false si es inalcanzable. */
 function ensurePathToRect(ctx: TickContext, v: Villager, rect: { x: number; y: number; w: number; h: number }): boolean {
   if (v.path.length > 0 || isAdjacentTo(v, rect)) return true;
   const path = pathToAdjacent(occupancy(ctx), tileOf(v), rect);
   if (!path) return false;
-  v.path = path;
+  v.path = centeredPath(v, path);
   return true;
 }
 
@@ -110,7 +120,7 @@ function updateMove(ctx: TickContext, v: Villager): void {
   if (result === 'arrived') setIdle(v);
   else if (result === 'blocked') {
     const path = pathToTile(occupancy(ctx), tileOf(v), { x: v.task.tx, y: v.task.ty });
-    if (path) v.path = path;
+    if (path) v.path = centeredPath(v, path);
     else setIdle(v);
   }
 }

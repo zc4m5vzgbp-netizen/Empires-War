@@ -239,6 +239,28 @@ test('Construcción: el cimiento bloquea el paso y el Molino terminado recibe co
   assert.equal(food(w), startFood + VILLAGER.carryCapacity);
 });
 
+test('Regresión: una orden recibida a mitad de un paso no deja al aldeano bloqueado', () => {
+  // Caso real detectado en WebKit: el aldeano estaba en (26,79; 20,21), junto al cimiento pero fuera del centro.
+  const w = make();
+  const v = villagers(w)[2]!;
+  const r = issueCommand(w, { type: 'build', playerId: PLAYER_ID, unitIds: [v.id], building: 'mill', x: 27, y: 18 });
+  assert.ok(r.ok);
+  v.x = 26.79195959492891;
+  v.y = 20.20804040507109;
+  v.path = [];
+  const mill = w.entities[r.entityId!] as Building;
+  run(w, 2000, () => mill.complete);
+  assert.ok(mill.complete, `bloqueado en (${v.x}, ${v.y}) con tarea ${JSON.stringify(v.task)}`);
+
+  // Lo mismo para mover: termina centrado en una casilla.
+  const w2 = make();
+  const v2 = villagers(w2)[0]!;
+  v2.x += 0.4;
+  issueCommand(w2, { type: 'move', playerId: PLAYER_ID, unitIds: [v2.id], x: Math.round(v2.x), y: Math.round(v2.y) });
+  run(w2, 200, () => v2.task.type === 'idle');
+  assert.ok(Number.isInteger(v2.x) && Number.isInteger(v2.y), `quedó en (${v2.x}, ${v2.y})`);
+});
+
 test('Órdenes: se rechazan unidades ajenas, IDs inexistentes y objetivos inválidos', () => {
   const w = make();
   const foreign = addEntity(w, newVillager(20, 20, 2));

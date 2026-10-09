@@ -3,6 +3,7 @@ import { describeMissing, getStockpile, missingFor, pay } from './economy.ts';
 import { buildOccupancy, isWalkable } from './grid.ts';
 import { nearestWalkable, pathToTile } from './pathfinding.ts';
 import { canPlaceBuilding } from './placement.ts';
+import { centeredPath } from './villager.ts';
 import type { EntityId, Tile, Villager } from './types.ts';
 import { addEntity, getEntity, type WorldState } from './world.ts';
 
@@ -71,7 +72,7 @@ export function issueCommand(world: WorldState, cmd: Command): CommandResult {
         const path = pathToTile(occ, { x: Math.round(v.x), y: Math.round(v.y) }, goal);
         if (!path) return;
         v.task = { type: 'move', tx: goal.x, ty: goal.y };
-        v.path = path;
+        v.path = centeredPath(v, path);
         moved++;
       });
       return moved > 0 ? { ok: true } : { ok: false, reason: 'No hay camino hasta ese punto.' };
