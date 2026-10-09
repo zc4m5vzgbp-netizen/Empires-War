@@ -150,49 +150,13 @@ async function mobileFlow(browserType, name) {
     await T(page, 'setTimeScale', 1);
     step('Molino construido por el aldeano');
 
-    // 5. Guardar.
+    // 5. Sin autenticación no debe anunciar falsamente que guardó en la nube.
     await page.getByRole('button', { name: 'Partida' }).tap();
     await page.getByRole('button', { name: 'Guardar' }).tap();
-    await page.getByText('Partida guardada.').waitFor({ timeout: 8000 });
-    const savedHash = await T(page, 'lastSavedHash');
-    if (!savedHash) throw new Error('no se registró la huella del guardado');
-    if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras guardar');
-    step('partida guardada; el juego sigue en marcha');
-
-    // 6. Cargar en la misma sesión: el estado vuelve exactamente al guardado.
-    await sleep(600);
-    if ((await T(page, 'hash')) === savedHash) throw new Error('el mundo no avanzó tras guardar');
-    await page.getByRole('button', { name: 'Cargar' }).tap();
-    await page.getByText(/Partida cargada/).waitFor({ timeout: 8000 });
-    if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('la carga no restauró el estado guardado');
-    step('carga en la misma sesión: huella idéntica');
-
-    // 7. Recargar la página y cargar: persiste en IndexedDB.
-    await open(page);
-    w = await T(page, 'world');
-    if (mills(w).length !== 0) throw new Error('la página recargada debería empezar sin Molino');
-    await page.getByRole('button', { name: 'Partida' }).tap();
-    await page.getByRole('button', { name: 'Cargar' }).tap();
-    await page.getByText(/Partida cargada/).waitFor({ timeout: 8000 });
-    if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('tras recargar, la partida no coincide');
-    w = await T(page, 'world');
-    if (mills(w).length !== 1 || !mills(w)[0].complete || w.players['1'].stockpile.wood !== 100) throw new Error('estado cargado incompleto');
-    await waitFor(async () => {
-      const ui2 = await readStockpileUi(page);
-      return ui2.wood === 100 && ui2.food >= 210;
-    }, 3000, 'reserva cargada en pantalla');
-    step('recarga de la página + Cargar: Molino, madera y comida restaurados (IndexedDB)');
-
-    // 8. Guardar con el juego en pausa: sigue en pausa.
-    await page.getByRole('button', { name: 'Pausar' }).tap();
-    const tick0 = (await T(page, 'world')).tick;
-    await page.getByRole('button', { name: 'Guardar' }).tap();
-    await page.getByText('Partida guardada.').waitFor({ timeout: 8000 });
-    await sleep(600);
-    if (!(await T(page, 'paused')) || (await T(page, 'world')).tick !== tick0) throw new Error('guardar quitó la pausa');
-    await page.getByRole('button', { name: 'Reanudar' }).tap();
-    await waitFor(async () => (await T(page, 'world')).tick > tick0, 3000, 'reanudar');
-    step('guardar en pausa conserva la pausa');
+    await page.getByText('Inicia sesión y selecciona un imperio para guardar.').waitFor({ timeout: 8000 });
+    if (await T(page, 'lastSavedHash')) throw new Error('guardado falsamente confirmado sin autenticación');
+    if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras intentar guardar');
+    step('sin sesión: no se confirma guardado inexistente; el juego sigue en marcha');
 
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
     await sleep(2500);
