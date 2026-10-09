@@ -37,3 +37,15 @@ export async function saveCloud(id: string | null, revision: number, title: stri
   if (!result) throw new Error('La nube no confirmó el guardado.');
   return result;
 }
+
+export async function emailLogin(email: string): Promise<void> {
+  const { error } = await cloud.auth.signInWithOtp({
+    email: email.trim(),
+    options: { emailRedirectTo: 'https://zc4m5vzgbp-netizen.github.io/Empires-War/' },
+  });
+  if (error) throw error;
+}
+export async function verifyEmailCode(email: string, token: string): Promise<void> {
+  const { error } = await cloud.auth.verifyOtp({ email: email.trim(), token: token.trim(), type: 'email' });
+  if (error) throw error;
+}
