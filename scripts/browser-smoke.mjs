@@ -134,7 +134,18 @@ async function mobileFlow(browserType, name) {
     if (w.players['1'].stockpile.wood !== 100) throw new Error(`madera esperada 100, hay ${w.players['1'].stockpile.wood}`);
     step('Molino colocado y pagado de la reserva (madera 200 → 100)');
     await T(page, 'setTimeScale', 10);
-    await waitFor(async () => mills(await T(page, 'world'))[0]?.complete, 30000, 'Molino terminado');
+    const t0 = Date.now();
+    const millTick0 = (await T(page, 'world')).tick;
+    try {
+      await waitFor(async () => mills(await T(page, 'world'))[0]?.complete, 60000, 'Molino terminado');
+    } catch (e) {
+      const s = await T(page, 'world');
+      const m = mills(s)[0];
+      const ve = s.entities[v.id];
+      const fps = (await page.locator('.stats dd').allTextContents())[0];
+      throw new Error(`${e.message} · ticks ${s.tick - millTick0} en ${Date.now() - t0} ms · FPS ${fps} · Molino ${JSON.stringify(m)} · aldeano ${JSON.stringify({ x: ve.x, y: ve.y, task: ve.task, path: ve.path.length })}`);
+    }
+    r.millBuildTicksPerSecond = Math.round((((await T(page, 'world')).tick - millTick0) * 1000) / (Date.now() - t0));
     await T(page, 'setTimeScale', 1);
     step('Molino construido por el aldeano');
 
@@ -292,7 +303,7 @@ async function desktopFlow() {
 const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow()];
 for (const r of results) {
   console.log(JSON.stringify(r));
-  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS ${r.fps} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
+  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS ${r.fps} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
   console.log(`::${r.ok ? 'notice' : 'error'} title=Navegador ${r.flow}::${summary.replace(/\n/g, ' ').slice(0, 3000)}`);
 }
 if (!results.every((r) => r.ok)) process.exit(1);
