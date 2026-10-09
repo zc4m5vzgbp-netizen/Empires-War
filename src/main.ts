@@ -129,7 +129,6 @@ const zoomCentered = (factor: number) => {
 };
 
 // --- Guardado y carga -------------------------------------------------------
-let saving = false;
 let lastSavedHash: string | null = null;
 let lastLoadedHash: string | null = null;
 
@@ -177,7 +176,6 @@ async function save(): Promise<void> {
   }
   if (cloudBusy) { pending = true; return; }
   cloudBusy = true;
-  saving = true;
   hud.set({ saving: true, cloudStatus: 'Sincronizando…' });
   try {
     const savedAt = new Date().toISOString();
@@ -195,7 +193,6 @@ async function save(): Promise<void> {
     toast('No se guardó en la nube: ' + String(e), 'error');
   } finally {
     cloudBusy = false;
-    saving = false;
     hud.set({ saving: false });
     scene.publishHud();
     if (pending) { pending = false; if (hashWorld(world) !== lastConfirmedHash) void save(); }
