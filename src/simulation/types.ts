@@ -1,3 +1,4 @@
+import type { Age } from '../content/ages.ts';
 import type { BuildingType, ResourceType, Stockpile } from '../content/economy.ts';
 
 // Tipos del estado del mundo. Solo datos simples (JSON), sin funciones ni clases.
@@ -59,4 +60,8 @@ export interface PlayerState {
   name: string;
   /** Reserva común del imperio: solo cambia al depositar o al pagar. */
   stockpile: Stockpile;
+  /** Ausente en guardados anteriores: equivale a Alta Edad Media. */
+  age?: Age;
+  /** Progreso de avance persistente en ticks, no en tiempo real. */
+  ageResearch?: { target: Age; remainingTicks: number; totalTicks: number } | null;
 }
