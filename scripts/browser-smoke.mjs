@@ -110,11 +110,11 @@ async function mobileFlow(browserType, name) {
       if (ve.carryAmount > 0 && s.players['1'].stockpile.food === 200) sawCarryWithoutGain = true;
       return s.players['1'].stockpile.food > 200;
     }, 40000, 'depósito de comida');
-    const ui1 = await readStockpileUi(page);
     w = await T(page, 'world');
     if (!sawCarryWithoutGain) throw new Error('no se observó carga antes del depósito');
     if (w.players['1'].stockpile.food !== 210) throw new Error(`comida esperada 210, hay ${w.players['1'].stockpile.food}`);
-    if (ui1.food < 210) throw new Error(`la interfaz muestra ${ui1.food} de comida`);
+    // La interfaz se refresca cada 0,1 s: se espera a que muestre el nuevo valor.
+    await waitFor(async () => (await readStockpileUi(page)).food >= 210, 3000, 'contador de comida en pantalla');
     step('la reserva solo sube al depositar (+10 comida)');
     await T(page, 'setTimeScale', 1);
 
@@ -176,8 +176,10 @@ async function mobileFlow(browserType, name) {
     if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('tras recargar, la partida no coincide');
     w = await T(page, 'world');
     if (mills(w).length !== 1 || !mills(w)[0].complete || w.players['1'].stockpile.wood !== 100) throw new Error('estado cargado incompleto');
-    const ui2 = await readStockpileUi(page);
-    if (ui2.wood !== 100 || ui2.food < 210) throw new Error(`interfaz tras cargar: ${JSON.stringify(ui2)}`);
+    await waitFor(async () => {
+      const ui2 = await readStockpileUi(page);
+      return ui2.wood === 100 && ui2.food >= 210;
+    }, 3000, 'reserva cargada en pantalla');
     step('recarga de la página + Cargar: Molino, madera y comida restaurados (IndexedDB)');
 
     // 8. Guardar con el juego en pausa: sigue en pausa.
