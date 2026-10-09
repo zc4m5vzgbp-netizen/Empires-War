@@ -274,8 +274,19 @@ export function createSaveManager(opts: ManagerOptions) {
     return false;
   }
 
-  /** Conecta con la nube y decide qué imperio queda activo. Dentro de lock(). */
+  /** Conecta con la nube y decide qué imperio queda activo. Dentro de lock(). Nunca deja el estado en «Conectando». */
   async function connect(): Promise<void> {
+    try {
+      await connectInner();
+    } catch (e) {
+      if (phase === 'connecting') {
+        setStatus(active ? 'offline' : 'choose', `No se pudo cargar el imperio: ${errText(e)}`);
+        if (active) scheduleRetry();
+      }
+    }
+  }
+
+  async function connectInner(): Promise<void> {
     if (owner === GUEST) return;
     setStatus('connecting', 'Conectando con la nube…');
     // Arranque sin red: si el dispositivo tiene una copia de este usuario, se juega con ella mientras tanto.

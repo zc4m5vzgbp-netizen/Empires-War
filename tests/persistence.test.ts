@@ -45,3 +45,23 @@ test('Guardado: rechaza archivos dañados, ajenos o de otra versión', () => {
   assert.equal(decodeSave('{"format":"otro-juego"}').ok, false);
   assert.equal(decodeSave('no es json').ok, false);
 });
+
+test('la huella no depende del orden de las claves (la nube jsonb las reordena)', () => {
+  const w = createWorld({ seed: 7, size: 32 });
+  for (let i = 0; i < 30; i++) stepWorld(w);
+  const reorder = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(reorder);
+    if (v && typeof v === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const k of Object.keys(v).reverse()) out[k] = reorder((v as Record<string, unknown>)[k]);
+      return out;
+    }
+    return v;
+  };
+  const text = encodeSave(w, '2026-10-09T00:00:00Z');
+  const shuffled = JSON.stringify(reorder(JSON.parse(text)));
+  assert.notEqual(shuffled, text);
+  const r = decodeSave(shuffled);
+  assert.ok(r.ok, r.ok ? '' : r.error);
+  assert.equal(hashWorld(r.save.world), hashWorld(w));
+});

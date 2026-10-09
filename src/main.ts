@@ -194,7 +194,7 @@ const report = (r: SaveOutcome | { ok: true } | null, okText?: string) => {
 cloud.auth.onAuthStateChange((_event, session) => {
   // Fuera del callback: supabase-js no permite llamar a la API dentro de él.
   const user = session?.user ? { id: session.user.id, label: session.user.email ?? 'Cuenta conectada' } : null;
-  setTimeout(() => void saves.setUser(user), 0);
+  setTimeout(() => void saves.setUser(user).catch((e) => toast(`Error de sesión: ${errorText(e)}`, 'error')), 0);
 });
 
 const AUTOSAVE_MS = 30000;

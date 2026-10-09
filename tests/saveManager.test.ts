@@ -386,3 +386,17 @@ test('reintentos con espera creciente', async () => {
   }
   assert.deepEqual(delays, [5000, 15000, 30000, 60000, 120000, 120000]);
 });
+
+test('un imperio dañado en la nube no deja el juego bloqueado en «Conectando»', async () => {
+  const cloud = fakeCloud();
+  const a = setup({ cloud });
+  await a.mgr.setUser(ALICE);
+  const id = a.view().activeId!;
+  cloud.rows.set(id, { ...cloud.rows.get(id)!, data: '{"roto":true}' });
+  const b = setup({ cloud });
+  await b.mgr.setUser(ALICE);
+  assert.equal(b.view().phase, 'choose');
+  assert.match(b.view().status, /No se pudo cargar/);
+  const r = await b.mgr.newEmpire(false);
+  assert.equal(r.ok, true);
+});

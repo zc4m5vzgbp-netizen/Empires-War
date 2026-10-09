@@ -48,7 +48,17 @@ async function openGame(context) {
   return page;
 }
 const view = (page) => C(page, 'view');
-const ready = (page, what) => waitFor(async () => ((await view(page)).phase === 'ready' && !(await view(page)).busy ? view(page) : null), 30000, what);
+async function ready(page, what) {
+  try {
+    return await waitFor(async () => {
+      const v = await view(page);
+      return v.phase === 'ready' && !v.busy ? v : null;
+    }, 30000, what);
+  } catch (e) {
+    const v = await view(page).catch(() => null);
+    throw new Error(`${e.message} · estado: ${v ? `${v.phase} «${v.status}»` : '?'} · errores: ${page.errors.join(' | ')}`);
+  }
+}
 
 /** Avanza el mundo de verdad y lo deja en pausa para comparar huellas sin que cambie. */
 async function playABit(page, ms = 1500) {
