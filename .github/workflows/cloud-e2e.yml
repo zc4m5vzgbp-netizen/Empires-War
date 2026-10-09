@@ -1,0 +1,64 @@
+name: Prueba real de guardado en la nube
+
+# Prueba de extremo a extremo contra Supabase real (sin simulaciones).
+# Usa dos cuentas de prueba temporales que se crean justo antes y se borran justo después.
+on:
+  workflow_dispatch:
+    inputs:
+      email_a: { description: 'Correo de la cuenta de prueba A', required: true }
+      pass_a: { description: 'Contraseña temporal A', required: true }
+      email_b: { description: 'Correo de la cuenta de prueba B', required: true }
+      pass_b: { description: 'Contraseña temporal B', required: true }
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ocultar credenciales temporales en los registros
+        run: |
+          echo "::add-mask::${{ inputs.pass_a }}"
+          echo "::add-mask::${{ inputs.pass_b }}"
+          echo "::add-mask::${{ inputs.email_a }}"
+          echo "::add-mask::${{ inputs.email_b }}"
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Instalar dependencias
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Prueba real contra Supabase (WebKit perfil iPhone + Chromium)
+        env:
+          E2E_EMAIL_A: ${{ inputs.email_a }}
+          E2E_PASS_A: ${{ inputs.pass_a }}
+          E2E_EMAIL_B: ${{ inputs.email_b }}
+          E2E_PASS_B: ${{ inputs.pass_b }}
+        run: |
+          npx playwright install --with-deps chromium webkit
+          npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
+          node scripts/cloud-e2e.mjs
+
+      - name: Resumen (anotaciones legibles desde el móvil)
+        if: always()
+        run: |
+          if [ -f cloud-e2e-result.json ]; then
+            node -e '
+              const r = require("./cloud-e2e-result.json");
+              console.log(`::notice title=Resultado::${r.ok ? "SUPERADA" : "FALLÓ"} ${r.error ?? ""}`);
+              r.steps.forEach((s, i) => console.log(`::notice title=Paso ${i + 1}::${s}`));
+              console.log(`::notice title=Ids::${JSON.stringify(r.ids)} escrituraDirectaBloqueada=${r.directWriteBlocked}`);
+            '
+          else
+            echo "::error title=Sin resultado::La prueba no llegó a ejecutarse"
+          fi

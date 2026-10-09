@@ -150,13 +150,19 @@ async function mobileFlow(browserType, name) {
     await T(page, 'setTimeScale', 1);
     step('Molino construido por el aldeano');
 
-    // 5. Sin autenticación no debe anunciar falsamente que guardó en la nube.
+    // 5. Sin sesión: guarda SOLO en el dispositivo, nunca anuncia «Guardado en la nube», y sobrevive a recargar.
     await page.getByRole('button', { name: 'Partida' }).tap();
     await page.getByRole('button', { name: 'Guardar' }).tap();
-    await page.getByText('Inicia sesión y selecciona un imperio para guardar.').waitFor({ timeout: 8000 });
-    if (await T(page, 'lastSavedHash')) throw new Error('guardado falsamente confirmado sin autenticación');
-    if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras intentar guardar');
-    step('sin sesión: no se confirma guardado inexistente; el juego sigue en marcha');
+    await page.getByText('Sin sesión: guardado solo en este dispositivo.').waitFor({ timeout: 8000 });
+    if (await T(page, 'lastSavedHash')) throw new Error('guardado en la nube falsamente confirmado sin sesión');
+    if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras guardar');
+    if ((await page.getByText('Guardado en la nube').count()) > 0) throw new Error('la interfaz anuncia guardado en la nube sin sesión');
+    step('sin sesión: guardado solo en el dispositivo, sin anunciar la nube; el juego sigue en marcha');
+    const millsBefore = mills(await T(page, 'world')).length;
+    await page.reload({ waitUntil: 'load' });
+    await waitFor(async () => (await page.evaluate(() => Boolean(window.__EW_TEST__))), 15000, 'juego tras recargar');
+    await waitFor(async () => mills(await T(page, 'world')).length === millsBefore, 15000, 'progreso sin cuenta recuperado tras recargar');
+    step('sin sesión: el progreso se recupera tras cerrar y abrir (copia del dispositivo)');
 
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
     await sleep(2500);
