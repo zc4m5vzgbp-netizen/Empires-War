@@ -15,6 +15,8 @@ export interface AppActions {
   save(): void;
   load(): void;
   login(provider: 'google' | 'apple'): void;
+  emailLogin(email: string): void;
+  verifyEmailCode(email: string, code: string): void;
   logout(): void;
   chooseSlot(id: string): void;
   newSlot(): void;
@@ -28,6 +30,8 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
   const [s, setState] = useState(store.get());
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   useEffect(() => {
     const unsubscribe = store.subscribe(setState);
     return () => {
@@ -146,7 +150,14 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
         <div class="menu" role="dialog" aria-label="Partida">
           <p class="panel-title">Partida</p>
           <p class="menu-note">Nube: {s.cloudStatus}</p>
-          {s.cloudUser ? <p class="menu-note">Cuenta: {s.cloudUser}</p> : <div class="menu-actions"><button type="button" onClick={() => actions.login('google')}>Entrar con Google</button><button type="button" onClick={() => actions.login('apple')}>Entrar con Apple</button></div>}
+          {s.cloudUser ? <p class="menu-note">Cuenta: {s.cloudUser}</p> : <div class="menu-actions">
+            <label class="menu-note" for="cloud-email">Correo electrónico</label>
+            <input id="cloud-email" type="email" autoComplete="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} placeholder="tu@correo.com" />
+            <button type="button" disabled={!email.includes('@')} onClick={() => actions.emailLogin(email)}>Enviar acceso por correo</button>
+            <label class="menu-note" for="cloud-code">Código recibido (si el correo contiene uno)</label>
+            <input id="cloud-code" type="text" inputMode="numeric" autoComplete="one-time-code" value={code} onInput={(e) => setCode(e.currentTarget.value)} placeholder="Código de 6 dígitos" />
+            <button type="button" disabled={!email.includes('@') || !code.trim()} onClick={() => actions.verifyEmailCode(email, code)}>Confirmar código</button>
+          </div>}
           {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button><button type="button" onClick={actions.newSlot}>Nuevo imperio</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
           <div class="menu-actions">
             <button type="button" onClick={actions.togglePause}>{s.paused ? 'Reanudar' : 'Pausar'}</button>
