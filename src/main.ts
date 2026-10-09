@@ -138,6 +138,8 @@ let activeRevision = 0;
 let pending = false;
 let cloudBusy = false;
 let cloudReady = false;
+let currentUserId: string | null = null;
+let slotChosen = false;
 let lastConfirmedHash: string | null = null;
 
 async function refreshSlots() {
@@ -147,22 +149,30 @@ async function refreshSlots() {
 }
 async function initCloud() {
   const user = await signedIn();
+  if ((user?.id ?? null) === currentUserId) return;
+  currentUserId = user?.id ?? null;
   cloudReady = Boolean(user);
+  activeSlot = null;
+  activeRevision = 0;
+  lastConfirmedHash = null;
+  slotChosen = false;
   hud.set({ cloudUser: user?.email ?? (user ? 'Cuenta conectada' : null), cloudStatus: user ? 'Conectado; selecciona o crea un imperio' : 'Sin sesión; inicia sesión para guardar' });
   if (user) {
     try {
       const slots = await refreshSlots();
       if (slots.length === 1) await loadSlot(slots[0]!.id);
+      else if (slots.length === 0) { slotChosen = true; hud.set({ cloudStatus: 'Imperio nuevo: se guardará automáticamente' }); }
     } catch (e) { hud.set({ cloudStatus: 'No se pudo consultar la nube' }); toast(String(e), 'error'); }
   } else {
     activeSlot = null;
     activeRevision = 0;
     lastConfirmedHash = null;
+    slotChosen = false;
   }
 }
 async function save(): Promise<void> {
-  if (!scene || !cloudReady) {
-    toast('Inicia sesión para guardar en la nube.', 'error');
+  if (!scene || !cloudReady || !slotChosen) {
+    toast('Inicia sesión y selecciona un imperio para guardar.', 'error');
     return;
   }
   if (cloudBusy) { pending = true; return; }
@@ -204,6 +214,7 @@ async function loadSlot(id: string): Promise<void> {
     if (!decoded.ok) throw new Error(decoded.error);
     replaceWorld(world, decoded.save.world);
     activeSlot = slot.id;
+    slotChosen = true;
     activeRevision = slot.revision;
     lastLoadedHash = hashWorld(world);
     lastConfirmedHash = lastLoadedHash;
@@ -220,12 +231,12 @@ async function load(): Promise<void> {
   await loadSlot(activeSlot ?? slots[0]!.id);
 }
 void initCloud();
-cloud.auth.onAuthStateChange(() => { setTimeout(() => void initCloud(), 0); });
+cloud.auth.onAuthStateChange((event) => { if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') setTimeout(() => void initCloud(), 0); });
 setInterval(() => {
-  if (cloudReady && !cloudBusy && hashWorld(world) !== lastConfirmedHash) void save();
+  if (cloudReady && slotChosen && !cloudBusy && hashWorld(world) !== lastConfirmedHash) void save();
 }, 30000);
 window.addEventListener('online', () => {
-  if (cloudReady && hashWorld(world) !== lastConfirmedHash) void save();
+  if (cloudReady && slotChosen && hashWorld(world) !== lastConfirmedHash) void save();
 });
 
 window.addEventListener('keydown', (e) => {
@@ -275,6 +286,19 @@ render(
       login: (provider) => void login(provider).catch(e => toast(String(e), 'error')),
       logout: () => void logout().catch(e => toast(String(e), 'error')),
       chooseSlot: (id) => void loadSlot(id),
+      newSlot: () => {
+        if (!cloudReady) { toast('Inicia sesión primero.', 'error'); return; }
+        if (lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) { toast('Guarda los cambios antes de crear otro imperio.', 'error'); return; }
+        activeSlot = null;
+        activeRevision = 0;
+        slotChosen = true;
+        lastConfirmedHash = null;
+        replaceWorld(world, createWorld({ seed: TEST_MAP.seed, size: TEST_MAP.size }));
+        controller.reset();
+        scene?.onWorldReplaced();
+        hud.set({ cloudStatus: 'Nuevo imperio pendiente de guardar', lastSavedAt: null });
+        void save();
+      },
     },
   }),
   uiEl,
