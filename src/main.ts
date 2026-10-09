@@ -5,9 +5,9 @@ import { STARTING_STOCKPILE } from './content/economy.ts';
 import { createController } from './input/controller.ts';
 import { INPUT } from './input/gestures.ts';
 import { bindPointerInput } from './input/pointerInput.ts';
-import { DEFAULT_SLOT, readSave, writeSave } from './persistence/idbStore.ts';
+import { cloud, listCloudSaves, login, logout, saveCloud, signedIn } from './persistence/cloudStore.ts';
 import { decodeSave, encodeSave } from './persistence/saveFormat.ts';
-import { withSavePause } from './persistence/savePause.ts';
+
 import { centerCameraOn, createCameraModel, panCamera, worldToScreen, zoomCameraAt } from './render/cameraModel.ts';
 import { GameScene } from './render/GameScene.ts';
 import { mapBounds, tileToWorld } from './render/iso.ts';
@@ -34,6 +34,9 @@ const hud = createHudStore({
   boxMode: false,
   box: null,
   saving: false,
+  cloudUser: null,
+  cloudStatus: 'Conecta tu cuenta para guardar',
+  cloudSlots: [],
   lastSavedAt: null,
   toast: null,
   error: null,
@@ -130,52 +133,100 @@ let saving = false;
 let lastSavedHash: string | null = null;
 let lastLoadedHash: string | null = null;
 
+let activeSlot: string | null = null;
+let activeRevision = 0;
+let pending = false;
+let cloudBusy = false;
+let cloudReady = false;
+let lastConfirmedHash: string | null = null;
+
+async function refreshSlots() {
+  const slots = await listCloudSaves();
+  hud.set({ cloudSlots: slots.map(({ id, title, updated_at }) => ({ id, title, updated_at })) });
+  return slots;
+}
+async function initCloud() {
+  const user = await signedIn();
+  cloudReady = Boolean(user);
+  hud.set({ cloudUser: user?.email ?? (user ? 'Cuenta conectada' : null), cloudStatus: user ? 'Conectado; selecciona o crea un imperio' : 'Sin sesión; inicia sesión para guardar' });
+  if (user) {
+    try {
+      const slots = await refreshSlots();
+      if (slots.length === 1) await loadSlot(slots[0]!.id);
+    } catch (e) { hud.set({ cloudStatus: 'No se pudo consultar la nube' }); toast(String(e), 'error'); }
+  } else {
+    activeSlot = null;
+    activeRevision = 0;
+    lastConfirmedHash = null;
+  }
+}
 async function save(): Promise<void> {
-  if (saving || !scene) return;
+  if (!scene || !cloudReady) {
+    toast('Inicia sesión para guardar en la nube.', 'error');
+    return;
+  }
+  if (cloudBusy) { pending = true; return; }
+  cloudBusy = true;
   saving = true;
-  hud.set({ saving: true });
+  hud.set({ saving: true, cloudStatus: 'Sincronizando…' });
   try {
-    // La pausa se activa antes de copiar el estado: nada cambia hasta que la escritura termina.
-    await withSavePause(scene.clock, async () => {
-      const savedAt = new Date().toISOString();
-      const data = encodeSave(world, savedAt);
-      const hash = hashWorld(world);
-      await writeSave({ slot: DEFAULT_SLOT, savedAt, data });
-      lastSavedHash = hash;
-      hud.set({ lastSavedAt: new Date(savedAt).toLocaleString('es') });
-    });
-    toast('Partida guardada.');
+    const savedAt = new Date().toISOString();
+    const data = encodeSave(world, savedAt);
+    const hash = hashWorld(world);
+    const result = await saveCloud(activeSlot, activeRevision, 'Mi imperio', data);
+    activeSlot = result.save_id;
+    activeRevision = result.new_revision;
+    lastConfirmedHash = hash;
+    lastSavedHash = hash;
+    hud.set({ lastSavedAt: new Date(result.saved_at).toLocaleString('es'), cloudStatus: 'Guardado en la nube' });
+    await refreshSlots();
   } catch (e) {
-    toast(`No se pudo guardar: ${e instanceof Error ? e.message : String(e)}`, 'error');
+    hud.set({ cloudStatus: 'Error: cambios no sincronizados' });
+    toast('No se guardó en la nube: ' + String(e), 'error');
   } finally {
+    cloudBusy = false;
     saving = false;
     hud.set({ saving: false });
     scene.publishHud();
+    if (pending) { pending = false; if (hashWorld(world) !== lastConfirmedHash) void save(); }
   }
 }
-
-async function load(): Promise<void> {
-  if (saving || !scene) return;
+async function loadSlot(id: string): Promise<void> {
+  if (cloudBusy || !scene) return;
+  if (lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) {
+    toast('Hay cambios sin guardar. Guarda antes de cambiar de imperio.', 'error');
+    return;
+  }
   try {
-    const stored = await readSave(DEFAULT_SLOT);
-    if (!stored) {
-      toast('No hay ninguna partida guardada en este navegador.', 'error');
-      return;
-    }
-    const result = decodeSave(stored.data);
-    if (!result.ok) {
-      toast(result.error, 'error');
-      return;
-    }
-    replaceWorld(world, result.save.world);
+    const slot = (await refreshSlots()).find(s => s.id === id);
+    if (!slot) throw new Error('Partida no encontrada.');
+    const decoded = decodeSave(JSON.stringify(slot.state));
+    if (!decoded.ok) throw new Error(decoded.error);
+    replaceWorld(world, decoded.save.world);
+    activeSlot = slot.id;
+    activeRevision = slot.revision;
     lastLoadedHash = hashWorld(world);
+    lastConfirmedHash = lastLoadedHash;
     controller.reset();
     scene.onWorldReplaced();
-    toast(`Partida cargada (guardada el ${new Date(stored.savedAt).toLocaleString('es')}).`);
-  } catch (e) {
-    toast(`No se pudo cargar: ${e instanceof Error ? e.message : String(e)}`, 'error');
-  }
+    hud.set({ cloudStatus: 'Partida recuperada de la nube', lastSavedAt: new Date(slot.updated_at).toLocaleString('es') });
+    toast('Imperio recuperado de la nube.');
+  } catch (e) { toast('Error al cargar: ' + String(e), 'error'); }
 }
+async function load(): Promise<void> {
+  if (!cloudReady) { toast('Inicia sesión para cargar.', 'error'); return; }
+  const slots = await refreshSlots();
+  if (!slots.length) { toast('No hay partidas en la nube.', 'error'); return; }
+  await loadSlot(activeSlot ?? slots[0]!.id);
+}
+void initCloud();
+cloud.auth.onAuthStateChange(() => { setTimeout(() => void initCloud(), 0); });
+setInterval(() => {
+  if (cloudReady && !cloudBusy && hashWorld(world) !== lastConfirmedHash) void save();
+}, 30000);
+window.addEventListener('online', () => {
+  if (cloudReady && hashWorld(world) !== lastConfirmedHash) void save();
+});
 
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape') {
@@ -221,6 +272,9 @@ render(
       },
       save: () => void save(),
       load: () => void load(),
+      login: (provider) => void login(provider).catch(e => toast(String(e), 'error')),
+      logout: () => void logout().catch(e => toast(String(e), 'error')),
+      chooseSlot: (id) => void loadSlot(id),
     },
   }),
   uiEl,
