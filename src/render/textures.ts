@@ -25,6 +25,16 @@ const TEX_H = TILE_H + PAD * 2;
 
 type Pt = { x: number; y: number };
 
+/** Traza un polígono con la API de rutas de Graphics (válida en Phaser 4). */
+function tracePolygon(g: Phaser.GameObjects.Graphics, pts: readonly Pt[]): void {
+  const [first, ...rest] = pts;
+  if (!first) return;
+  g.beginPath();
+  g.moveTo(first.x, first.y);
+  for (const p of rest) g.lineTo(p.x, p.y);
+  g.closePath();
+}
+
 /** Esquinas del rombo: arriba, derecha, abajo, izquierda. */
 function diamond(inset = 0): [Pt, Pt, Pt, Pt] {
   const cx = TEX_W / 2;
@@ -47,7 +57,8 @@ export function createProvisionalTextures(scene: Phaser.Scene): void {
     for (let v = 0; v < TILE_VARIANTS; v++) {
       g.clear();
       g.fillStyle(PALETTE[kind][v] ?? 0xff00ff, 1);
-      g.fillPoints(diamond(), true);
+      tracePolygon(g, diamond());
+      g.fillPath();
       // Borde superior iluminado e inferior sombreado: da volumen sin texturas externas.
       const [top, right, bottom, left] = diamond(1);
       g.lineStyle(1, EDGE_LIGHT, 0.08);
@@ -80,7 +91,8 @@ export function createProvisionalTextures(scene: Phaser.Scene): void {
   // Contorno para la casilla tocada.
   g.clear();
   g.lineStyle(2, 0xfff3c4, 1);
-  g.strokePoints(diamond(2), true);
+  tracePolygon(g, diamond(2));
+  g.strokePath();
   g.generateTexture(HIGHLIGHT_KEY, TEX_W, TEX_H);
 
   g.destroy();

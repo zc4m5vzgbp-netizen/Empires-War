@@ -20,9 +20,9 @@ jobs:
     name: Typecheck, pruebas y compilación
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -30,19 +30,31 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Versiones instaladas (registro para docs/DECISIONS.md)
-        run: npm ls --depth=0
+        run: |
+          npm ls --depth=0
+          echo "::notice title=Versiones instaladas::$(npm ls --depth=0 | tail -n +2 | tr '\n' ' ')"
 
       - name: Typecheck (juego completo y simulación sin navegador)
-        run: npm run typecheck
+        run: set -o pipefail; npm run typecheck 2>&1 | tee -a ci.log
 
       - name: Pruebas
-        run: npm test
+        run: set -o pipefail; npm test 2>&1 | tee -a ci.log
 
       - name: Compilar
-        run: npm run build
+        run: set -o pipefail; npm run build 2>&1 | tee -a ci.log
 
       - name: Verificar rutas bajo /Empires-War/
-        run: npm run verify:dist
+        run: set -o pipefail; npm run verify:dist 2>&1 | tee -a ci.log
+
+      - name: Resumen de resultados (anotación legible desde el móvil)
+        if: always()
+        run: |
+          echo "::notice title=Pruebas::$(grep -E '^# (tests|pass|fail)' ci.log | tr '\n' ' ')"
+          echo "::notice title=Compilación::$(grep -E 'built in|dist/ verificado|error' ci.log | tr '\n' ' ' | cut -c1-900)"
+
+      - name: Últimas líneas del registro si algo falló
+        if: failure()
+        run: echo "::error title=Registro::$(tail -n 40 ci.log | tr '\n' ' ' | cut -c1-3000)"
 
       - name: Configurar GitHub Pages
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
