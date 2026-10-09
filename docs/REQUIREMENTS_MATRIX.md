@@ -12,16 +12,16 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | ID | Requisito | § | Bloque | Estado | Prueba / evidencia |
 |---|---|---|---|---|---|
 | INF-01 | Repositorio GitHub `Empires-War` | 11, 13 | 0 | probado | Creado por el usuario; escritura de Claude comprobada (commits en `main`) |
-| INF-02 | Vite + TypeScript | 9 | 0 | probado | `npm run typecheck` y `npm run build` en verde (GitHub Actions, ejecución 37968793972) |
-| INF-03 | Phaser 4 para render | 9 | 0 | probado | Phaser 4.2.1 compila y dibuja la escena en Chromium y WebKit (`scripts/browser-smoke.mjs`, GitHub Actions, ejecución 37968793972) |
-| INF-04 | Preact para la interfaz | 9 | 0 | probado | HUD y botones operados por la prueba de navegador (GitHub Actions, ejecución 37968793972) |
-| INF-05 | Publicación en GitHub Pages bajo `/Empires-War/` | 11 | 0 | en progreso | Rutas verificadas: `scripts/verify-dist.mjs` (GitHub Actions, ejecución 37968793972). Falta que el usuario active Pages y comprobar la URL |
-| INF-06 | GitHub Actions: typecheck, pruebas, build y despliegue | 11 | 0 | en progreso | Comprobaciones en verde (GitHub Actions, ejecución 37968793972); despliegue bloqueado hasta activar Pages |
+| INF-02 | Vite + TypeScript | 9 | 0 | probado | `npm run typecheck` y `npm run build` en verde (GitHub Actions, ejecución 37970309448) |
+| INF-03 | Phaser 4 para render | 9 | 0 | probado | Phaser 4.2.1 compila y dibuja la escena en Chromium y WebKit (`scripts/browser-smoke.mjs`, GitHub Actions, ejecución 37970309448) |
+| INF-04 | Preact para la interfaz | 9 | 0 | probado | HUD y botones operados por la prueba de navegador (GitHub Actions, ejecución 37970309448) |
+| INF-05 | Publicación en GitHub Pages bajo `/Empires-War/` | 11 | 0 | probado | Rutas verificadas por `scripts/verify-dist.mjs`; despliegue `github-pages` correcto (commit 57e3f05, 2026-10-09); la URL responde con el título «Empires-War» |
+| INF-06 | GitHub Actions: typecheck, pruebas, build y despliegue | 11 | 0 | probado | Workflow «Comprobar y publicar» completo en verde (GitHub Actions, ejecución 37970309448) |
 | INF-07 | El usuario no necesita Node ni terminal | 13 | 0 | implementado | Todo corre en GitHub Actions |
-| INF-08 | Versiones exactas registradas | 9 | 0 | probado | Fijadas en `package.json` y anotadas por el workflow (GitHub Actions, ejecución 37968793972); ver `docs/DECISIONS.md` |
-| INF-10 | Prueba de humo en navegador (Chromium y WebKit, pantalla iPhone 15 Pro Max) | 10 | 0 | probado | `scripts/browser-smoke.mjs` (GitHub Actions, ejecución 37968793972) |
+| INF-08 | Versiones exactas registradas | 9 | 0 | probado | Fijadas en `package.json` y anotadas por el workflow (GitHub Actions, ejecución 37970309448); ver `docs/DECISIONS.md` |
+| INF-10 | Prueba de humo en navegador (Chromium y WebKit, pantalla iPhone 15 Pro Max) | 10 | 0 | probado | `scripts/browser-smoke.mjs` (GitHub Actions, ejecución 37970309448) |
 | INF-09 | Archivo de bloqueo de dependencias (`package-lock.json`) en el repositorio | 9 | 1 | pendiente | El registro npm no es accesible desde la sesión de Claude; se añadirá desde CI |
-| ARQ-01 | Módulos separados: simulation, content, render, ui, input, persistence, tests | 9 | 0 | probado | `tests/architecture.test.ts` (local y GitHub Actions, ejecución 37968793972) |
+| ARQ-01 | Módulos separados: simulation, content, render, ui, input, persistence, tests | 9 | 0 | probado | `tests/architecture.test.ts` (local y GitHub Actions, ejecución 37970309448) |
 | ARQ-02 | Simulación independiente de Phaser, Preact y del navegador | 9 | 0 | probado | `tests/architecture.test.ts` + `tsconfig.sim.json` sin DOM (local) |
 | ARQ-03 | Estado serializable | 9 | 0 | probado | `tests/simulation.test.ts` (JSON ida y vuelta, local) |
 | ARQ-04 | Tick fijo (20/s) separado del render | 9, 10 | 0 | probado | `tests/simulation.test.ts` (reloj, local); medición en el HUD |
@@ -36,13 +36,13 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 
 | ID | Requisito | § | Bloque | Estado | Prueba / evidencia |
 |---|---|---|---|---|---|
-| UI-01 | Escena isométrica visible de prueba, rotulada como «no es gameplay» | 2, 11 | 0 | probado | Prueba de navegador: lienzo dibujado con >1.300 colores, sin errores (GitHub Actions, ejecución 37968793972). Pendiente: prueba manual del usuario en su iPhone |
+| UI-01 | Escena isométrica visible de prueba, rotulada como «no es gameplay» | 2, 11 | 0 | probado | Prueba de navegador: lienzo dibujado con >1.300 colores, sin errores (GitHub Actions, ejecución 37970309448). Pendiente: prueba manual del usuario en su iPhone |
 | UI-02 | Terreno provisional original | 1, 7 | 0 | implementado | `src/render/textures.ts` (generado por código, sin archivos de terceros) |
-| INP-01 | Desplazar cámara: arrastre táctil, ratón, teclado (WASD/flechas) | 7 | 0 | probado | Lógica: `tests/render-math.test.ts`; arrastre en navegador cambia la imagen (GitHub Actions, ejecución 37968793972). Pendiente: gesto táctil real en iPhone y teclado (prueba manual) |
-| INP-02 | Zoom: pellizco, rueda, botones +/− | 7 | 0 | probado | Lógica: `tests/render-math.test.ts`; botón + en navegador (0,70 → 0,88, GitHub Actions, ejecución 37968793972). Pendiente: pellizco y rueda (prueba manual) |
+| INP-01 | Desplazar cámara: arrastre táctil, ratón, teclado (WASD/flechas) | 7 | 0 | probado | Lógica: `tests/render-math.test.ts`; arrastre en navegador cambia la imagen (GitHub Actions, ejecución 37970309448). Pendiente: gesto táctil real en iPhone y teclado (prueba manual) |
+| INP-02 | Zoom: pellizco, rueda, botones +/− | 7 | 0 | probado | Lógica: `tests/render-math.test.ts`; botón + en navegador (0,70 → 0,88, GitHub Actions, ejecución 37970309448). Pendiente: pellizco y rueda (prueba manual) |
 | INP-03 | Sin teclado obligatorio en iPhone; botones táctiles ≥ 48 px | 7 | 0 | implementado | Prueba manual en iPhone |
-| INP-04 | Inspeccionar casilla con un toque | — | 0 | probado | Prueba de navegador: «Hierba · casilla 25, 28» (GitHub Actions, ejecución 37968793972) |
-| UI-03 | Medición en pantalla: FPS, ticks/s, tiempo de tick, zoom | 10 | 0 | probado | Prueba de navegador: 60 FPS, 18–20 ticks/s en el emulador (GitHub Actions, ejecución 37968793972). Las cifras del iPhone real las obtiene el usuario |
+| INP-04 | Inspeccionar casilla con un toque | — | 0 | probado | Prueba de navegador: «Hierba · casilla 25, 28» (GitHub Actions, ejecución 37970309448) |
+| UI-03 | Medición en pantalla: FPS, ticks/s, tiempo de tick, zoom | 10 | 0 | probado | Prueba de navegador: 60 FPS, 18–20 ticks/s en el emulador (GitHub Actions, ejecución 37970309448). Las cifras del iPhone real las obtiene el usuario |
 | UI-04 | Pantalla de error con «Copiar error» | 13 | 0 | implementado | Prueba manual (solo aparece si hay error) |
 | UI-05 | Selección de unidades (toque y arrastre de caja) | 2, 11 | 1 | pendiente | — |
 | UI-06 | Órdenes de movimiento | 2, 11 | 1 | pendiente | — |
@@ -139,7 +139,7 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 
 | ID | Requisito | § | Bloque | Estado | Prueba / evidencia |
 |---|---|---|---|---|---|
-| REN-01 | Instrumentar FPS y tiempo de tick | 10 | 0 | probado | HUD leído por la prueba de navegador (GitHub Actions, ejecución 37968793972) |
+| REN-01 | Instrumentar FPS, tiempo de tick y tiempo de arranque | 10 | 0 | probado | HUD leído por la prueba de navegador; arranque 3,1 s (Chromium) y 3,9 s (WebKit) en el emulador sin GPU de GitHub (ejecución 37970309448) |
 | REN-02 | Instrumentar memoria, unidades activas y tiempo de pathfinding | 10 | 2–4 | pendiente | — |
 | REN-03 | Escenarios exploratorios con 600, 1.200, 2.400, 3.600 y 4.800 unidades, con registro de condiciones | 10 | 4–6 | pendiente | — |
 | REN-04 | La fluidez en iPhone 15 Pro Max prevalece sobre tamaño de mapa, unidades o detalle (EXC-09) | 3.9 | todos | en progreso | Escena de prueba medida en el dispositivo por el usuario |
