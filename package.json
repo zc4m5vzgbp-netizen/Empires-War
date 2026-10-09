@@ -1,0 +1,29 @@
+{
+  "name": "empires-war",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Empires-War: RTS histórico isométrico para navegador. Proyecto original inspirado en AoE II DE.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.sim.json",
+    "test": "tsx --test tests/*.test.ts",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run verify:dist"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1",
+    "preact": "^10.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.23.12",
+    "typescript": "^6.0.3",
+    "vite": "^7.0.0"
+  }
+}
