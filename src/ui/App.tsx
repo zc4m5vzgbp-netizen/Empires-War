@@ -14,6 +14,9 @@ export interface AppActions {
   toggleBoxMode(): void;
   save(): void;
   load(): void;
+  login(provider: 'google' | 'apple'): void;
+  logout(): void;
+  chooseSlot(id: string): void;
 }
 
 const millCost = Object.entries(BUILDINGS.mill.cost)
@@ -141,6 +144,9 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
       {menuOpen && (
         <div class="menu" role="dialog" aria-label="Partida">
           <p class="panel-title">Partida</p>
+          <p class="menu-note">Nube: {s.cloudStatus}</p>
+          {s.cloudUser ? <p class="menu-note">Cuenta: {s.cloudUser}</p> : <div class="menu-actions"><button type="button" onClick={() => actions.login('google')}>Entrar con Google</button><button type="button" onClick={() => actions.login('apple')}>Entrar con Apple</button></div>}
+          {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
           <div class="menu-actions">
             <button type="button" onClick={actions.togglePause}>{s.paused ? 'Reanudar' : 'Pausar'}</button>
             <button type="button" class="primary" disabled={s.saving} onClick={actions.save}>
@@ -150,7 +156,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
           </div>
           <p class="menu-note">{s.lastSavedAt ? `Último guardado: ${s.lastSavedAt}` : 'Aún no hay partida guardada en esta sesión.'}</p>
           <p class="menu-warning">
-            Las partidas se guardan solo en este navegador. Si borras los datos de Safari o de este sitio, se pierden.
+            El guardado confirmado se almacena en la nube. Sin conexión, los cambios pueden perderse al cerrar Safari. Comprueba el estado antes de salir.
           </p>
           <button type="button" class="menu-close" onClick={() => setMenuOpen(false)}>Cerrar</button>
         </div>
