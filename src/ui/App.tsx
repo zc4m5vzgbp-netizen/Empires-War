@@ -17,6 +17,7 @@ export interface AppActions {
   login(provider: 'google' | 'apple'): void;
   logout(): void;
   chooseSlot(id: string): void;
+  newSlot(): void;
 }
 
 const millCost = Object.entries(BUILDINGS.mill.cost)
@@ -146,7 +147,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
           <p class="panel-title">Partida</p>
           <p class="menu-note">Nube: {s.cloudStatus}</p>
           {s.cloudUser ? <p class="menu-note">Cuenta: {s.cloudUser}</p> : <div class="menu-actions"><button type="button" onClick={() => actions.login('google')}>Entrar con Google</button><button type="button" onClick={() => actions.login('apple')}>Entrar con Apple</button></div>}
-          {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
+          {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button><button type="button" onClick={actions.newSlot}>Nuevo imperio</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
           <div class="menu-actions">
             <button type="button" onClick={actions.togglePause}>{s.paused ? 'Reanudar' : 'Pausar'}</button>
             <button type="button" class="primary" disabled={s.saving} onClick={actions.save}>
