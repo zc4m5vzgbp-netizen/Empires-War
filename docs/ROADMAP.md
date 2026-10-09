@@ -4,7 +4,7 @@ Bloques del documento maestro v2 (§11). Un bloque solo se da por terminado si e
 
 Criterios comunes a todos los bloques: lista de requisitos de `REQUIREMENTS_MATRIX.md` actualizada, typecheck, pruebas y build en verde en GitHub Actions, URL publicada comprobada, prueba manual en iPhone y PC, errores conocidos y riesgos documentados.
 
-## Bloque 0 — Infraestructura y publicación
+## Bloque 0 — Infraestructura y publicación (aceptado por el usuario el 9 de octubre de 2026)
 
 Entrega: repositorio, Vite + TypeScript + Phaser 4 + Preact, módulos separados, pruebas de humo, GitHub Actions y GitHub Pages bajo `/Empires-War/`, escena isométrica de prueba con cámara táctil y de PC.
 
@@ -15,7 +15,7 @@ Criterios de aceptación:
 - La pantalla dice claramente que es una escena de prueba.
 - La simulación compila y se prueba sin Phaser ni navegador.
 
-## Bloque 1 — Primer vertical slice jugable
+## Bloque 1 — Primer vertical slice jugable (entregado; pendiente de aceptación del usuario)
 
 Entrega: mapa isométrico pequeño, selección, órdenes de movimiento, un aldeano, un recurso recolectable, un edificio de depósito, reserva común, una construcción de prueba, guardado y carga. IA ausente o dummy rotulada.
 
@@ -26,6 +26,8 @@ Criterios de aceptación:
 - Guardar y cargar devuelve exactamente la misma partida; el mundo no avanza mientras se escribe; si estaba en pausa, sigue en pausa.
 - Todos los valores numéricos rotulados como provisionales.
 - Pruebas automáticas de la simulación para cada acción anterior.
+
+Estado de la entrega: todos los criterios anteriores tienen prueba automática y prueba en navegador (Chromium y WebKit con perfil de iPhone, Chromium de escritorio). Informe: `docs/reports/BLOQUE_1.md`.
 
 ## Bloque 2 — Economía clásica completa
 

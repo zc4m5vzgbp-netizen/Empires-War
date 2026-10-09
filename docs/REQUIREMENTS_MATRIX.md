@@ -5,7 +5,7 @@ Fuente: `docs/MASTER_DESIGN.md` (documento maestro v2.0). Cada requisito tiene u
 **Estados:** `pendiente` · `en progreso` · `implementado` (código existe, sin prueba ejecutada) · `probado` (prueba ejecutada y aprobada; se indica dónde).
 Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» = sesión de Claude; «Actions» = GitHub Actions. Las 20 pruebas automáticas pasan en ambos.
 
-Última actualización: Bloque 0.
+Última actualización: Bloque 1.
 
 ## Infraestructura y arquitectura (INF, ARQ)
 
@@ -19,17 +19,19 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | INF-06 | GitHub Actions: typecheck, pruebas, build y despliegue | 11 | 0 | probado | Workflow «Comprobar y publicar» completo en verde (GitHub Actions, ejecución 37970309448) |
 | INF-07 | El usuario no necesita Node ni terminal | 13 | 0 | implementado | Todo corre en GitHub Actions |
 | INF-08 | Versiones exactas registradas | 9 | 0 | probado | Fijadas en `package.json` y anotadas por el workflow (GitHub Actions, ejecución 37970309448); ver `docs/DECISIONS.md` |
-| INF-10 | Prueba de humo en navegador (Chromium y WebKit, pantalla iPhone 15 Pro Max) | 10 | 0 | probado | `scripts/browser-smoke.mjs` (GitHub Actions, ejecución 37970309448) |
-| INF-09 | Archivo de bloqueo de dependencias (`package-lock.json`) en el repositorio | 9 | 1 | pendiente | El registro npm no es accesible desde la sesión de Claude; se añadirá desde CI |
+| INF-11 | Capturas de revisión visual (iPhone y escritorio) publicadas en la rama `capturas` | 10 | 1 | probado | Workflow `screenshots.yml` |
+| INF-12 | Diagnóstico de FPS por etapa del ciclo | 10 | 1 | probado | Workflow `diagnostics.yml` (ejecución 37977108535) |
+| INF-10 | Prueba en navegador (Chromium y WebKit móvil + Chromium escritorio), ampliada al ciclo económico en el Bloque 1 | 10 | 0–1 | probado | `scripts/browser-smoke.mjs` (GitHub Actions, ejecución 37970309448) |
+| INF-09 | Archivo de bloqueo de dependencias (`package-lock.json`) e instalaciones reproducibles | 9 | 1 | probado | Generado por el workflow `lockfile.yml` (ejecución 37972254050); CI instala con `npm ci` |
 | ARQ-01 | Módulos separados: simulation, content, render, ui, input, persistence, tests | 9 | 0 | probado | `tests/architecture.test.ts` (local y GitHub Actions, ejecución 37970309448) |
 | ARQ-02 | Simulación independiente de Phaser, Preact y del navegador | 9 | 0 | probado | `tests/architecture.test.ts` + `tsconfig.sim.json` sin DOM (local) |
 | ARQ-03 | Estado serializable | 9 | 0 | probado | `tests/simulation.test.ts` (JSON ida y vuelta, local) |
 | ARQ-04 | Tick fijo (20/s) separado del render | 9, 10 | 0 | probado | `tests/simulation.test.ts` (reloj, local); medición en el HUD |
 | ARQ-05 | Semilla reproducible, sin aleatorio del navegador en la simulación | 9 | 0 | probado | `tests/simulation.test.ts` + `tests/architecture.test.ts` (local) |
-| ARQ-06 | IDs estables de entidades | 9 | 1 | en progreso | `nextEntityId` existe en el estado; las entidades llegan en el Bloque 1 |
+| ARQ-06 | IDs estables de entidades | 9 | 1 | probado | `tests/economy.test.ts`: IDs consecutivos, nunca reutilizados, conservados al guardar/cargar |
 | ARQ-07 | Sin física de Phaser como fuente de verdad | 9 | 0 | implementado | Phaser no tiene física activada; la simulación es propia |
 | ARQ-08 | Preparado para Web Worker | 9 | 6 | pendiente | Simulación pura ya aislada; migración solo si las pruebas lo justifican |
-| ARQ-09 | Fórmulas y redondeos en un solo módulo de simulación | 4 | 2 | pendiente | — |
+| ARQ-09 | Fórmulas y redondeos en un solo módulo de simulación | 4 | 1–2 | en progreso | Bloque 1: reserva común en `simulation/economy.ts`, construcción en `simulation/construction.ts`, recolección en enteros en `simulation/villager.ts`. Falta consolidar con los valores reales del Bloque 2 |
 | ARQ-10 | Catálogo tipado con `sourceVersion`, `sourceNote` y `verified/provisional` | 4 | 0 | probado | `src/content/types.ts`; `tests/architecture.test.ts` (local) |
 
 ## Escena, cámara y controles (UI, INP)
@@ -44,9 +46,11 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | INP-04 | Inspeccionar casilla con un toque | — | 0 | probado | Prueba de navegador: «Hierba · casilla 25, 28» (GitHub Actions, ejecución 37970309448) |
 | UI-03 | Medición en pantalla: FPS, ticks/s, tiempo de tick, zoom | 10 | 0 | probado | Prueba de navegador: 60 FPS, 18–20 ticks/s en el emulador (GitHub Actions, ejecución 37970309448). Las cifras del iPhone real las obtiene el usuario |
 | UI-04 | Pantalla de error con «Copiar error» | 13 | 0 | implementado | Prueba manual (solo aparece si hay error) |
-| UI-05 | Selección de unidades (toque y arrastre de caja) | 2, 11 | 1 | pendiente | — |
-| UI-06 | Órdenes de movimiento | 2, 11 | 1 | pendiente | — |
-| UI-07 | Interfaz adaptable y legible en pantallas pequeñas; botones contextuales | 7 | 1–6 | en progreso | — |
+| UI-05 | Selección de unidades: toque en iPhone, clic y recuadro en PC, modo Recuadro táctil | 2, 11 | 1 | probado | `tests/picking.test.ts`; navegador: toque real en Chromium/WebKit móvil, recuadro con ratón en escritorio (Actions 37976551424) |
+| UI-06 | Órdenes de movimiento (toque en suelo; clic derecho en PC), en grupo con destinos distintos | 2, 11 | 1 | probado | `tests/economy.test.ts`; navegador escritorio (Actions 37976551424) |
+| UI-07 | Interfaz adaptable y legible en pantallas pequeñas; botones contextuales | 7 | 1–6 | en progreso | Bloque 1: panel de selección, botones ≥ 44 px, revisión con capturas de iPhone (rama `capturas`) |
+| UI-13 | Menú «Partida»: pausar/reanudar, guardar, cargar, último guardado | 9 | 1 | probado | Navegador móvil (Actions 37976551424) |
+| UI-14 | Mensajes de resultado y de error de las órdenes (p. ej. «Faltan 100 de madera») | — | 1 | probado | `tests/economy.test.ts` (texto del rechazo); navegador |
 | UI-08 | Controles PC completos (atajos, clic derecho) | 7 | 2–4 | pendiente | — |
 | UI-09 | Minimapa con modo normal | 7 | 4 | pendiente | — |
 | UI-10 | Botón «Ver por relación» solo en el minimapa (EXC-04) | 3.4 | 4 | pendiente | — |
@@ -57,10 +61,11 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 
 | ID | Requisito | § | Bloque | Estado | Prueba / evidencia |
 |---|---|---|---|---|---|
-| ECO-01 | Aldeano que se desplaza, recolecta y deposita | 2, 11 | 1 | pendiente | — |
-| ECO-02 | Reserva común del imperio; depositar suma al contador global | 3, 4 | 1 | pendiente | — |
-| ECO-03 | Pagar costes desde la reserva común, sin almacén pagador | 3, 4 | 1 | pendiente | — |
-| ECO-04 | Construcción básica de prueba | 2, 11 | 1 | pendiente | — |
+| ECO-01 | Aldeano que se desplaza (A*), recolecta gradualmente, transporta y deposita | 2, 11 | 1 | probado | `tests/economy.test.ts` (ritmo 0,31/s, carga máx. 10, depósito); navegador móvil (Actions 37976551424) |
+| ECO-02 | Reserva común del imperio; depositar suma al contador global | 3, 4 | 1 | probado | `tests/economy.test.ts`: la reserva no cambia hasta depositar; navegador: 200 → 210 solo al depositar (Actions 37976551424) |
+| ECO-03 | Pagar costes desde la reserva común, sin almacén pagador | 3, 4 | 1 | probado | `tests/economy.test.ts`: Molino 200 → 100 de madera; rechazo sin cobrar si falta; navegador (Actions 37976551424) |
+| ECO-04 | Construcción de prueba: Molino con vista previa, construcción progresiva y depósito de comida al terminar | 2, 11 | 1 | probado | `tests/economy.test.ts` (35 s con 1 aldeano, × 3/4 con 2; deposita en el Molino); navegador móvil y escritorio (Actions 37976551424) |
+| ECO-14 | Datos económicos del Bloque 1 marcados `provisional` y «sin verificar», con nota de procedencia | 4 | 1 | probado | `src/content/economy.ts`; `tests/architecture.test.ts` |
 | ECO-05 | Cuatro recursos: comida, madera, oro, piedra | 4 | 2 | pendiente | — |
 | ECO-06 | Tareas clásicas de aldeanos y edificios de depósito compatibles | 4 | 2 | pendiente | — |
 | ECO-07 | Granjas y resembrado con costes de AoE II DE | 3, 4 | 2 | pendiente | — |
@@ -88,7 +93,7 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 |---|---|---|---|---|---|
 | UNI-01 | Estadísticas parametrizadas: vida, ataque, defensa, bonificaciones, alcance, visión, velocidad, costes | 6 | 4 | pendiente | — |
 | UNI-02 | Órdenes: mover, atacar, atacar-mover, patrullar, defender, mantener posición, formaciones, puntos de reunión | 6 | 4 | pendiente | — |
-| UNI-03 | Colisiones, rutas y obstáculos sin atravesar edificios ni bloqueos permanentes | 6 | 1–4 | pendiente | — |
+| UNI-03 | Colisiones, rutas y obstáculos sin atravesar edificios ni bloqueos permanentes | 6 | 1–4 | en progreso | Bloque 1 probado: ningún aldeano pisa agua, bosque, edificios, cimientos ni arbustos en ningún tick (`tests/economy.test.ts`); corregido bloqueo entre casillas. Pendiente: colisión entre unidades (Bloque 4) |
 | UNI-04 | Daño a edificios, estados visuales, derrumbe y reparación según AoE II DE | 6 | 4 | pendiente | — |
 | UNI-05 | Sin fuego propagable ni ruinas persistentes especiales | 6 | todos | implementado | Ausencia verificada en revisión |
 | UNI-06 | Límites de población clásicos configurables | 6 | 2 | pendiente | — |
@@ -115,7 +120,7 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | IA-01 | IA clásica: recolecta, construye, avanza edades, entrena, defiende, ataca | 8 | 5 | pendiente | — |
 | IA-02 | Dificultad seleccionable | 8 | 5 | pendiente | — |
 | IA-03 | Sin recursos gratis, omnisciencia ni bonificaciones ocultas | 8 | 5 | pendiente | — |
-| IA-04 | En el Bloque 1 la IA es ausente o dummy rotulada | 11 | 1 | pendiente | — |
+| IA-04 | En el Bloque 1 la IA es ausente o dummy rotulada | 11 | 1 | implementado | La barra superior indica «IA no implementada»; no existe código de IA |
 | DIP-01 | Diplomacia clásica aliado/neutral/enemigo, sin tratados avanzados | 8 | 5 | pendiente | — |
 | VIC-01 | Capital = primer Centro Urbano, transferible formalmente; destruirla no causa derrota (EXC-01) | 3.1 | 5 | pendiente | — |
 | VIC-02 | Derrota del jugador al perder todos sus Centros Urbanos (EXC-01) | 3.1, 8 | 5 | pendiente | — |
@@ -128,11 +133,11 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | ID | Requisito | § | Bloque | Estado | Prueba / evidencia |
 |---|---|---|---|---|---|
 | GUA-01 | Formato de guardado versionado con validación | 9 | 0 | probado | `tests/persistence.test.ts` (local) |
-| GUA-02 | Guardado y carga inicial en el juego (IndexedDB) | 2, 11 | 1 | pendiente | — |
-| GUA-03 | Pausar solo durante la escritura; reanudar si estaba en marcha, conservar pausa si estaba pausado (EXC-08) | 3.8, 9 | 1 | pendiente | El reloj ya tiene estado de pausa |
+| GUA-02 | Guardado y carga en el juego (IndexedDB, una ranura) | 2, 11 | 1 | probado | Navegador: guardar, cargar en la misma sesión y tras recargar la página, huella idéntica (Actions 37976551424); `tests/economy.test.ts` |
+| GUA-03 | Pausar solo durante la escritura; reanudar si estaba en marcha, conservar pausa si estaba pausado (EXC-08) | 3.8, 9 | 1 | probado | `tests/economy.test.ts` (`withSavePause`, también ante error de escritura); navegador (Actions 37976551424) |
 | GUA-04 | Varias ranuras, guardado manual y automático | 9 | 6 | pendiente | — |
-| GUA-05 | Carga verificada, manejo de errores, escritura atómica cuando sea posible | 9 | 1–6 | en progreso | Validación y huella ya probadas (local) |
-| GUA-06 | Explicar al usuario que borrar datos del navegador puede eliminar partidas | 9 | 1 | pendiente | — |
+| GUA-05 | Carga verificada, manejo de errores, escritura atómica cuando sea posible | 9 | 1–6 | en progreso | Huella y validación (`tests/persistence.test.ts`); escritura en una transacción IndexedDB; errores mostrados al usuario. Pendiente: varias ranuras y copia antes de migrar |
+| GUA-06 | Explicar al usuario que borrar datos del navegador puede eliminar partidas | 9 | 1 | implementado | Aviso fijo en el menú «Partida» (visible en la captura `07-iphone-menu-partida.png`) |
 | GUA-07 | Exportar/importar guardados | 9 | 6 (antes si es sencillo) | pendiente | — |
 
 ## Rendimiento (REN)

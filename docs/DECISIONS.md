@@ -27,6 +27,27 @@ Las decisiones explícitas del usuario prevalecen. Toda sustitución queda regis
 | T-010 | GitHub Pages lo activa el usuario una vez (Settings → Pages → Source: GitHub Actions) | El token del workflow no tiene permiso para crear el sitio de Pages |
 | T-008 | Lienzo a resolución 1× (sin ajuste para pantallas retina) | Rendimiento; los textos de interfaz son HTML y se ven nítidos. Se revisará con arte definitivo |
 
+## Decisiones técnicas del Bloque 1 (tomadas por Claude, sin cambiar reglas confirmadas)
+
+| ID | Decisión | Motivo |
+|---|---|---|
+| T-011 | `package-lock.json` lo genera GitHub Actions (`lockfile.yml`) y CI instala con `npm ci` | La sesión de Claude no tiene acceso al registro npm |
+| T-012 | Las órdenes (`simulation/commands.ts`) son la única vía para cambiar el mundo; la interfaz solo consulta reglas (`canAfford`, `canPlaceBuilding`) | No duplicar reglas económicas en la interfaz |
+| T-013 | La rejilla de obstáculos se calcula a partir del estado cuando se necesita, sin guardarla | Nunca se desincroniza; coste medido 0,04 ms en el mapa de 48 × 48. Revisar en mapas grandes (Bloque 2+) |
+| T-014 | A* en 8 direcciones sin cortar esquinas, desempates deterministas | Rutas reproducibles; las unidades no atraviesan esquinas de obstáculos |
+| T-015 | Recolección y construcción con aritmética entera (milésimas y tercios) | Determinismo exacto al guardar, cargar y repetir |
+| T-016 | Escenario de prueba con 3 aldeanos | Necesario para probar la selección múltiple por recuadro que pide el Bloque 1 |
+| T-017 | En iPhone, tocar con aldeanos seleccionados da la orden contextual (bayas = recolectar, suelo = mover, cimiento = construir); botón «Recuadro» para selección múltiple táctil | Sin clic derecho en pantallas táctiles |
+| T-018 | En PC, arrastre izquierdo = recuadro; arrastre derecho o central = mover cámara; clic derecho = orden | Convención RTS; el Bloque 0 usaba el arrastre izquierdo para la cámara |
+| T-019 | Al terminar un edificio sus constructores quedan libres en el mismo tick | Corrección detectada por las pruebas |
+| T-020 | Si una orden llega con el aldeano entre dos casillas, primero camina al centro de su casilla | Corrección del bloqueo detectado en WebKit (aldeano quieto en 26,79; 20,21) |
+| T-021 | Gancho de pruebas `__EW_TEST__` solo con `?test=1` en la URL, con multiplicador de tiempo para pruebas | Permite verificar el ciclo completo en CI sin esperar minutos; no cambia reglas y no existe sin `?test=1` |
+| T-022 | Una sola ranura de guardado («partida-1») | Alcance del Bloque 1; varias ranuras y autoguardado quedan en el Bloque 6 (GUA-04) |
+
+## Datos provisionales del Bloque 1 (sin verificar contra una versión de balance de AoE II DE)
+
+Reserva inicial 200/200/100/200 · velocidad del aldeano 0,8 casillas/s · carga 10 · recolección de bayas 0,31/s · arbusto 125 de comida · Molino 100 de madera, 35 s, huella 2 × 2 · Centro Urbano provisional 4 × 4 sin producción · construcción con n aldeanos: base × 3/(n + 2). Todos marcados `provisional` en `src/content/economy.ts`; se validarán en el Bloque 2 (ECO-08).
+
 ## Versiones de dependencias
 
 `package.json` fija estas versiones exactas (sin `^`), verificadas en CI:
