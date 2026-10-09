@@ -16,7 +16,6 @@ const EDGE_DARK = 0x000000;
 export const TILE_VARIANTS = 2;
 export const tileKey = (kind: number, variant: number) => `tile-${kind}-${variant}`;
 export const TREE_KEY = 'tree';
-export const HIGHLIGHT_KEY = 'tile-highlight';
 
 // El rombo se dibuja 2 px más grande que la casilla para que no se vean juntas entre casillas.
 const PAD = 1;
@@ -87,13 +86,6 @@ export function createProvisionalTextures(scene: Phaser.Scene): void {
   g.fillStyle(0x3d6b35, 1);
   g.fillEllipse(26, 32, 22, 22);
   g.generateTexture(TREE_KEY, 64, 82);
-
-  // Contorno para la casilla tocada.
-  g.clear();
-  g.lineStyle(2, 0xfff3c4, 1);
-  tracePolygon(g, diamond(2));
-  g.strokePath();
-  g.generateTexture(HIGHLIGHT_KEY, TEX_W, TEX_H);
 
   g.destroy();
 }

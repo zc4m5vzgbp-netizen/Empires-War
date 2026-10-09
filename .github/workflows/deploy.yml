@@ -26,8 +26,9 @@ jobs:
         with:
           node-version: 22
 
-      - name: Instalar dependencias
-        run: npm install --no-audit --no-fund
+      - name: Instalar dependencias (reproducible con package-lock.json)
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
 
       - name: Versiones instaladas (registro para docs/DECISIONS.md)
         run: |

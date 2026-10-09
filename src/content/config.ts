@@ -8,7 +8,7 @@ export const ENGINE = {
   maxTicksPerFrame: 5,
 } as const;
 
-// Mapa de la escena de prueba del Bloque 0.
+// Mapa de prueba (Bloques 0 y 1).
 export const TEST_MAP: { size: number; seed: number } & Sourced = {
   size: 48,
   seed: 20261009,
@@ -22,6 +22,6 @@ export const TEST_TERRAIN = {
   waterBelow: 0.27,
   dirtAbove: 0.7,
   forestAbove: 0.68,
-  /** Radio despejado (en casillas) alrededor del centro, reservado para el Bloque 1. */
-  clearRadius: 6,
+  /** Radio despejado (hierba) alrededor del centro, donde cabe el escenario del Bloque 1. */
+  clearRadius: 11,
 } as const;

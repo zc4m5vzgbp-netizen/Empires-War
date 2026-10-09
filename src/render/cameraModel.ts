@@ -64,3 +64,15 @@ export function zoomCameraAt(
   cam.cy += before.y - after.y;
   clampCamera(cam);
 }
+
+/** Convierte un punto del mundo en coordenadas de pantalla. */
+export function worldToScreen(cam: CameraModel, wx: number, wy: number, viewW: number, viewH: number) {
+  return { x: (wx - cam.cx) * cam.zoom + viewW / 2, y: (wy - cam.cy) * cam.zoom + viewH / 2 };
+}
+
+/** Centra la cámara en un punto del mundo. */
+export function centerCameraOn(cam: CameraModel, wx: number, wy: number): void {
+  cam.cx = wx;
+  cam.cy = wy;
+  clampCamera(cam);
+}
