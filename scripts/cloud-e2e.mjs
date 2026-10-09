@@ -30,8 +30,17 @@ async function waitFor(check, timeoutMs, what) {
 }
 
 const results = { steps: [], ids: {}, ok: false };
+const save = () => writeFileSync('cloud-e2e-result.json', JSON.stringify(results, null, 2));
+// Vigilante: si algo se queda colgado, se registra dónde y se termina (no se espera indefinidamente).
+setTimeout(() => {
+  results.error = `tiempo total agotado tras el paso: ${results.steps.at(-1) ?? 'ninguno'}`;
+  save();
+  process.exit(1);
+}, 6 * 60 * 1000).unref();
+const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`colgado: ${what}`)), ms))]);
 const step = (text, data) => {
   results.steps.push(data ? `${text} · ${JSON.stringify(data)}` : text);
+  save();
   console.log(`✔ ${text}${data ? ' ' + JSON.stringify(data) : ''}`);
 };
 const expect = (cond, msg) => {
@@ -184,7 +193,7 @@ try {
   step('escritura directa del propio dueño (sin control de revisión)', { bloqueada: results.directWriteBlocked, detalle: directOwn.code ?? directOwn.error });
 
   // Cierre de sesión: el mundo no queda asociado a la cuenta.
-  await C(a, 'signOut');
+  await withTimeout(C(a, 'signOut'), 15000, 'cerrar sesión');
   await waitFor(async () => (await view(a)).phase === 'guest', 15000, 'sesión cerrada');
   step('cierre de sesión correcto');
 
@@ -195,7 +204,7 @@ try {
   results.error = e.message;
   console.error(`✘ ${e.message}`);
 } finally {
-  for (const br of browsers) await br.close().catch(() => {});
-  writeFileSync('cloud-e2e-result.json', JSON.stringify(results, null, 2));
+  save();
+  for (const br of browsers) await withTimeout(br.close(), 10000, 'cerrar navegador').catch(() => {});
 }
 process.exit(results.ok ? 0 : 1);
