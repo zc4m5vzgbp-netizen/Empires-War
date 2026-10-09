@@ -18,11 +18,14 @@ export const cloud = createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
   },
 });
 
-/** Código de PostgreSQL que save_empire usa para «revisión distinta / partida ajena o inexistente». */
-const CONFLICT_CODE = '40001';
+/**
+ * Código que save_empire usa para «revisión distinta / partida ajena o inexistente».
+ * Antes era 40001, pero supabase-js reintenta ese código automáticamente (bucle hasta agotar el tiempo).
+ */
+const CONFLICT_CODES = new Set(['EW409', '40001']);
 
 function fail(error: { message: string; code?: string } | null, what: string): never {
-  if (error?.code === CONFLICT_CODE) throw new ConflictError(error.message);
+  if (error?.code && CONFLICT_CODES.has(error.code)) throw new ConflictError(error.message);
   throw new Error(`${what}: ${error?.message ?? 'respuesta vacía'}`);
 }
 
