@@ -193,6 +193,10 @@ async function mobileFlow(browserType, name) {
     await waitFor(async () => (await T(page, 'world')).tick > tick0, 3000, 'reanudar');
     step('guardar en pausa conserva la pausa');
 
+    // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
+    await sleep(2500);
+    r.fpsAfter = Number((await page.locator('.stats dd').allTextContents())[0]);
+
     r.errors = errors;
     r.ok = errors.length === 0;
   } catch (e) {
@@ -305,7 +309,7 @@ async function desktopFlow() {
 const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow()];
 for (const r of results) {
   console.log(JSON.stringify(r));
-  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS ${r.fps} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
+  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
   console.log(`::${r.ok ? 'notice' : 'error'} title=Navegador ${r.flow}::${summary.replace(/\n/g, ' ').slice(0, 3000)}`);
 }
 if (!results.every((r) => r.ok)) process.exit(1);
