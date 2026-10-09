@@ -140,6 +140,7 @@ let cloudReady = false;
 let currentUserId: string | null = null;
 let slotChosen = false;
 let lastConfirmedHash: string | null = null;
+const initialWorldHash = hashWorld(world);
 
 async function refreshSlots() {
   const slots = await listCloudSaves();
@@ -159,7 +160,10 @@ async function initCloud() {
   if (user) {
     try {
       const slots = await refreshSlots();
-      if (slots.length === 1) await loadSlot(slots[0]!.id);
+      if (slots.length === 1) {
+        if (hashWorld(world) === initialWorldHash) await loadSlot(slots[0]!.id);
+        else hud.set({ cloudStatus: 'Hay progreso local sin guardar: elige un imperio o guarda uno nuevo' });
+      }
       else if (slots.length === 0) { slotChosen = true; hud.set({ cloudStatus: 'Imperio nuevo: se guardará automáticamente' }); }
     } catch (e) { hud.set({ cloudStatus: 'No se pudo consultar la nube' }); toast(String(e), 'error'); }
   } else {
@@ -200,7 +204,7 @@ async function save(): Promise<void> {
 }
 async function loadSlot(id: string): Promise<void> {
   if (cloudBusy || !scene) return;
-  if (lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) {
+  if ((lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) || (lastConfirmedHash === null && hashWorld(world) !== initialWorldHash && !slotChosen)) {
     toast('Hay cambios sin guardar. Guarda antes de cambiar de imperio.', 'error');
     return;
   }
@@ -287,7 +291,7 @@ render(
       chooseSlot: (id) => void loadSlot(id),
       newSlot: () => {
         if (!cloudReady) { toast('Inicia sesión primero.', 'error'); return; }
-        if (lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) { toast('Guarda los cambios antes de crear otro imperio.', 'error'); return; }
+        if ((lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) || (lastConfirmedHash === null && hashWorld(world) !== initialWorldHash && slotChosen)) { toast('Guarda los cambios antes de crear otro imperio.', 'error'); return; }
         activeSlot = null;
         activeRevision = 0;
         slotChosen = true;
