@@ -40,9 +40,13 @@ async function run(browserType, name) {
 
   const result = { browser: name, ok: false };
   try {
+    const started = Date.now();
     await page.goto(URL, { waitUntil: 'load' });
     await page.waitForSelector('#game canvas', { timeout: 15000 });
-    await page.waitForTimeout(2500);
+    // Espera a que el juego esté funcionando (primer refresco del HUD con FPS > 0).
+    await page.waitForFunction(() => Number(document.querySelector('.stats dd')?.textContent) > 0, null, { timeout: 20000 });
+    result.msToFirstStats = Date.now() - started;
+    await page.waitForTimeout(1500);
 
     const stats = await page.locator('.stats dd').allTextContents();
     result.fps = Number(stats[0]);
@@ -104,7 +108,7 @@ for (const [type, name] of [
   const r = await run(type, name);
   results.push(r);
   console.log(JSON.stringify(r));
-  const summary = `${r.ok ? 'OK' : 'FALLO'} · lienzo ${r.canvas} · FPS ${r.fps} · ticks/s ${r.ticksPerSecond} · colores ${r.colors} · pan ${r.panChangedImage} · zoom ${r.zoomStart}→${r.zoomAfterButton} · info «${r.info}» · errores ${r.errors.length ? r.errors.join(' | ') : 0}`;
+  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.msToFirstStats} ms · lienzo ${r.canvas} · FPS ${r.fps} · ticks/s ${r.ticksPerSecond} · colores ${r.colors} · pan ${r.panChangedImage} · zoom ${r.zoomStart}→${r.zoomAfterButton} · info «${r.info}» · errores ${r.errors.length ? r.errors.join(' | ') : 0}`;
   console.log(`::${r.ok ? 'notice' : 'error'} title=Navegador ${name} (iPhone 15 Pro Max)::${summary.replace(/\n/g, ' ').slice(0, 1500)}`);
 }
 if (!results.every((r) => r.ok)) process.exit(1);

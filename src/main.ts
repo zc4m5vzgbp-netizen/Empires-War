@@ -13,7 +13,7 @@ import './ui/styles.css';
 
 const BUILD = `${__BUILD_ID__} (${__BUILD_TIME__.slice(0, 16).replace('T', ' ')} UTC)`;
 
-const hud = createHudStore({ fps: 0, ticksPerSecond: 0, stepMs: 0, tick: 0, zoom: 1, info: null, error: null });
+const hud = createHudStore({ fps: 0, ticksPerSecond: 0, stepMs: 0, tick: 0, zoom: 0, info: null, error: null });
 
 const reportError = (message: string) => hud.set({ error: message });
 window.addEventListener('error', (e) => reportError(`${e.message}\n${e.filename}:${e.lineno}`));
@@ -31,6 +31,7 @@ const camera = createCameraModel(mapBounds(world.map.width, world.map.height), {
   zoom: startZoom,
 });
 const home = { cx: camera.cx, cy: camera.cy, zoom: camera.zoom };
+hud.set({ zoom: camera.zoom });
 
 const viewSize = () => ({ w: gameEl.clientWidth, h: gameEl.clientHeight });
 
