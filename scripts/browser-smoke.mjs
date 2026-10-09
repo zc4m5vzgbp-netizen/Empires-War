@@ -71,6 +71,7 @@ async function mobileFlow(browserType, name) {
     r.bootMs = await open(page);
     await sleep(1500);
     r.fps = Number((await page.locator('.stats dd').allTextContents())[0]);
+    r.objectsStart = await T(page, 'objectCount');
     const ui0 = await readStockpileUi(page);
     if (ui0.food !== 200 || ui0.wood !== 200) throw new Error(`reserva inicial inesperada ${JSON.stringify(ui0)}`);
     step('reserva inicial 200/200/100/200');
@@ -196,6 +197,10 @@ async function mobileFlow(browserType, name) {
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
     await sleep(2500);
     r.fpsAfter = Number((await page.locator('.stats dd').allTextContents())[0]);
+    await sleep(5000);
+    r.fpsAfter2 = Number((await page.locator('.stats dd').allTextContents())[0]);
+    // Tras el ciclo hay exactamente un objeto más (el Molino) y un arbusto menos o igual: no debe crecer sin control.
+    r.objectsEnd = await T(page, 'objectCount');
 
     r.errors = errors;
     r.ok = errors.length === 0;
@@ -309,7 +314,7 @@ async function desktopFlow() {
 const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow()];
 for (const r of results) {
   console.log(JSON.stringify(r));
-  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
+  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} y ${r.fpsAfter2 ?? '-'} · objetos ${r.objectsStart ?? '-'}→${r.objectsEnd ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
   console.log(`::${r.ok ? 'notice' : 'error'} title=Navegador ${r.flow}::${summary.replace(/\n/g, ' ').slice(0, 3000)}`);
 }
 if (!results.every((r) => r.ok)) process.exit(1);

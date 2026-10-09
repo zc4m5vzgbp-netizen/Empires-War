@@ -249,5 +249,6 @@ if (new URLSearchParams(location.search).has('test')) {
     },
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     paused: () => scene?.clock.paused ?? false,
+    objectCount: () => scene?.children.list.length ?? 0,
   };
 }
