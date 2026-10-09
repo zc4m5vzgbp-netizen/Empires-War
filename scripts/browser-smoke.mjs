@@ -65,9 +65,13 @@ async function run(browserType, name) {
     result.panChangedImage = !shotA.equals(shotB);
 
     // Botón de acercar.
+    // El HUD se refresca cada 0,5 s: se espera hasta 3 s a que muestre el nuevo zoom.
     await page.getByRole('button', { name: 'Acercar' }).click();
-    await page.waitForTimeout(700);
-    result.zoomAfterButton = Number((await page.locator('.stats dd').allTextContents())[3]);
+    for (let waited = 0; waited <= 3000; waited += 250) {
+      await page.waitForTimeout(250);
+      result.zoomAfterButton = Number((await page.locator('.stats dd').allTextContents())[3]);
+      if (result.zoomAfterButton > result.zoomStart) break;
+    }
 
     // Toque para inspeccionar una casilla en el centro.
     await page.mouse.click(phone.viewport.width / 2, phone.viewport.height / 2);
