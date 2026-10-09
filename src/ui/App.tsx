@@ -20,6 +20,7 @@ export interface AppActions {
   logout(): void;
   chooseSlot(id: string): void;
   newSlot(): void;
+  saveCurrentAsNew(): void;
 }
 
 const millCost = Object.entries(BUILDINGS.mill.cost)
@@ -158,7 +159,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
             <input id="cloud-code" type="text" inputMode="numeric" autoComplete="one-time-code" value={code} onInput={(e) => setCode(e.currentTarget.value)} placeholder="Código de 6 dígitos" />
             <button type="button" disabled={!email.includes('@') || !code.trim()} onClick={() => actions.verifyEmailCode(email, code)}>Confirmar código</button>
           </div>}
-          {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button><button type="button" onClick={actions.newSlot}>Nuevo imperio</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
+          {s.cloudUser && <div class="menu-actions"><button type="button" onClick={actions.logout}>Cerrar sesión</button><button type="button" onClick={actions.saveCurrentAsNew}>Guardar progreso actual como imperio nuevo</button><button type="button" onClick={actions.newSlot}>Nuevo imperio desde cero</button>{s.cloudSlots.map(slot => <button type="button" key={slot.id} onClick={() => actions.chooseSlot(slot.id)}>Cargar {slot.title} ({new Date(slot.updated_at).toLocaleDateString('es')})</button>)}</div>}
           <div class="menu-actions">
             <button type="button" onClick={actions.togglePause}>{s.paused ? 'Reanudar' : 'Pausar'}</button>
             <button type="button" class="primary" disabled={s.saving} onClick={actions.save}>
