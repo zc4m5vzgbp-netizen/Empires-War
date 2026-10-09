@@ -23,12 +23,15 @@ Las decisiones explícitas del usuario prevalecen. Toda sustitución queda regis
 | T-005 | Vite en la línea 7.x | La compatibilidad con Vite 8 no pudo verificarse desde la sesión (sin acceso al registro npm); la versión exacta instalada se registra desde Actions |
 | T-006 | Phaser en un archivo aparte al compilar | Caché del navegador entre publicaciones |
 | T-007 | Arte provisional generado por código (rombos de terreno, árbol) | Sin archivos de terceros; reemplazable sin tocar la simulación |
+| T-009 | Phaser 4 tipa `fillPoints` con su propio `Vector2`; los polígonos se trazan con `beginPath/moveTo/lineTo` | Primer error real de compatibilidad Phaser 3 → 4 detectado en CI y corregido |
+| T-010 | GitHub Pages lo activa el usuario una vez (Settings → Pages → Source: GitHub Actions) | El token del workflow no tiene permiso para crear el sitio de Pages |
 | T-008 | Lienzo a resolución 1× (sin ajuste para pantallas retina) | Rendimiento; los textos de interfaz son HTML y se ven nítidos. Se revisará con arte definitivo |
 
 ## Versiones de dependencias
 
-Rangos en `package.json`: `phaser ^4.2.1`, `preact ^10.26.0`, `vite ^7.0.0`, `typescript ^6.0.3`, `tsx ^4.23.12`, `@types/node ^22.10.0`.
-Versiones exactas instaladas: se registran del paso «Versiones instaladas» del workflow (ver informe del Bloque 0).
+`package.json` fija estas versiones exactas (sin `^`), verificadas en CI:
+Versiones exactas instaladas en GitHub Actions (ejecución 37968570376, 2026-10-09): `phaser 4.2.1`, `preact 10.29.8`, `vite 7.3.7`, `typescript 6.0.3`, `tsx 4.23.15`, `@types/node 22.20.5`.
+Combinación verificada: typecheck, pruebas y compilación pasan con estas versiones.
 
 ## Reglas sustituidas (historial)
 
