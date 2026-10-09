@@ -289,6 +289,15 @@ render(
       verifyEmailCode: (email, code) => void verifyEmailCode(email, code).then(() => void initCloud()).catch(e => toast(String(e), 'error')),
       logout: () => void logout().catch(e => toast(String(e), 'error')),
       chooseSlot: (id) => void loadSlot(id),
+      saveCurrentAsNew: () => {
+        if (!cloudReady || cloudBusy) { toast('Inicia sesión y espera a que termine la sincronización.', 'error'); return; }
+        if (slotChosen && lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) { toast('Guarda los cambios del imperio actual antes de crear otro.', 'error'); return; }
+        activeSlot = null;
+        activeRevision = 0;
+        lastConfirmedHash = null;
+        slotChosen = true;
+        void save();
+      },
       newSlot: () => {
         if (!cloudReady) { toast('Inicia sesión primero.', 'error'); return; }
         if ((lastConfirmedHash !== null && hashWorld(world) !== lastConfirmedHash) || (lastConfirmedHash === null && hashWorld(world) !== initialWorldHash && slotChosen)) { toast('Guarda los cambios antes de crear otro imperio.', 'error'); return; }
