@@ -156,7 +156,8 @@ async function mobileFlow(browserType, name) {
     await page.getByText('Sin sesión: guardado solo en este dispositivo.').waitFor({ timeout: 8000 });
     if (await T(page, 'lastSavedHash')) throw new Error('guardado en la nube falsamente confirmado sin sesión');
     if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras guardar');
-    if ((await page.getByText('Guardado en la nube').count()) > 0) throw new Error('la interfaz anuncia guardado en la nube sin sesión');
+    // (el aviso fijo del menú menciona «Guardado en la nube» como texto a esperar; se revisan estado y avisos)
+    if ((await page.locator('.menu-status, .toast').filter({ hasText: 'Guardado en la nube' }).count()) > 0) throw new Error('la interfaz anuncia guardado en la nube sin sesión');
     step('sin sesión: guardado solo en el dispositivo, sin anunciar la nube; el juego sigue en marcha');
     const millsBefore = mills(await T(page, 'world')).length;
     await page.reload({ waitUntil: 'load' });

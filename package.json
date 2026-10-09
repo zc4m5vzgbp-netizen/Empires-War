@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "phaser": "4.2.1",
-    "@supabase/supabase-js": "^2.57.0",
+    "@supabase/supabase-js": "2.117.3",
     "preact": "10.29.8"
   },
   "devDependencies": {
