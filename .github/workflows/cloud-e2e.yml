@@ -9,12 +9,16 @@ on:
       pass_a: { description: 'Contraseña temporal A', required: true }
       email_b: { description: 'Correo de la cuenta de prueba B', required: true }
       pass_b: { description: 'Contraseña temporal B', required: true }
+  # Solo para que GitHub registre el workflow desde esta rama; sin credenciales el trabajo se omite.
+  push:
+    paths: [.github/workflows/cloud-e2e.yml]
 
 permissions:
   contents: read
 
 jobs:
   e2e:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Ocultar credenciales temporales en los registros
