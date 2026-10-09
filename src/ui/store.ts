@@ -19,6 +19,9 @@ export interface HudState {
   /** Recuadro de selección en pantalla mientras se arrastra. */
   box: { x: number; y: number; w: number; h: number } | null;
   saving: boolean;
+  cloudUser: string | null;
+  cloudStatus: string;
+  cloudSlots: { id: string; title: string; updated_at: string }[];
   lastSavedAt: string | null;
   toast: { id: number; text: string; kind: 'info' | 'error' } | null;
   error: string | null;
