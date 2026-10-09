@@ -46,6 +46,13 @@ jobs:
       - name: Verificar rutas bajo /Empires-War/
         run: set -o pipefail; npm run verify:dist 2>&1 | tee -a ci.log
 
+      - name: Prueba en navegador (Chromium y WebKit, pantalla de iPhone 15 Pro Max)
+        run: |
+          npx playwright install --with-deps chromium webkit
+          npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
+          set -o pipefail; npm run smoke:browser 2>&1 | tee -a ci.log
+
       - name: Resumen de resultados (anotación legible desde el móvil)
         if: always()
         run: |
