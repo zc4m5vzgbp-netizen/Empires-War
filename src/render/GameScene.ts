@@ -17,6 +17,8 @@ import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './t
 import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
 import { groundFrame } from './terrainArt.ts';
+import { preloadVillagerArt, createVillagerAnimations } from './villagerArt.ts';
+import { preloadCampArt } from './campArt.ts';
 
 export interface GameSceneDeps {
   world: WorldState;
@@ -55,6 +57,8 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     preloadArt(this);
+    preloadVillagerArt(this);
+    preloadCampArt(this);
   }
 
   create(): void {
@@ -62,6 +66,7 @@ export class GameScene extends Phaser.Scene {
     createEntityTextures(this);
     const art = artReady(this);
     if (art) createArtAnimations(this);
+    createVillagerAnimations(this);
     if (art) this.drawArtTerrain();
     else this.drawTerrain();
     if (art && new URLSearchParams(location.search).has('galeria')) addGallery(this);
