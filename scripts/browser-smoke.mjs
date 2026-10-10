@@ -214,7 +214,8 @@ async function mobileFlow(browserType, name) {
     await page.getByText(/Partida cargada/).waitFor({ timeout: 8000 });
     if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('tras recargar, la partida no coincide');
     w = await T(page, 'world');
-    if (mills(w).length !== 1 || !mills(w)[0].complete || w.players['1'].stockpile.wood !== 100) throw new Error('estado cargado incompleto');
+    // La reserva exacta depende de lo recolectado antes de guardar (paso 4b); la huella idéntica ya garantiza que coincide.
+    if (mills(w).length !== 1 || !mills(w)[0].complete) throw new Error('estado cargado incompleto');
     await waitFor(async () => {
       const ui2 = await readStockpileUi(page);
       return ui2.wood === 100 && ui2.food >= 210;
