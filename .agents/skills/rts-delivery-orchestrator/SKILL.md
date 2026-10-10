@@ -16,7 +16,7 @@ Activar al planear, implementar, integrar, validar o cerrar una característica 
 3. **Propietario:** asignar responsable y rama por archivo/subsistema; Claude no edita la simulación principal y ChatGPT no altera sus ramas.
 4. **Implementación:** enlazar commits y archivos concretos; registrar decisiones y cambios fuera de alcance.
 5. **Pruebas:** unitarias, integración y móvil según riesgo; incluir al menos un caso negativo y una regresión cuando haya bug.
-6. **Integración:** comparar SHAs, conflictos, recursos/licencias y cambios perdidos; nunca fusionar `main` sin aprobación explícita.
+6. **Integración y guardia de PR:** inspeccionar base/head/SHAs y diffs por archivo, especialmente solapamientos con ramas de Claude; revisar licencias, binarios y cambios perdidos (incluido panel VIS-07 en `App.tsx`); integrar solo en rama propia; ejecutar typecheck, test, build, verify:dist y smoke de navegador según alcance; registrar resultados reales; nunca fusionar `main` sin aprobación explícita.
 7. **Verificación:** comprobar que el jugador puede ejecutar la función de extremo a extremo; CI verde por sí solo no basta para afirmar compatibilidad con iPhone físico.
 8. **Cierre:** actualizar ledger y matriz; marcar `verified` solo con evidencia reproducible. Si falta alguna puerta, estado `blocked` o `partial`, no `done`.
 
@@ -26,7 +26,7 @@ Activar al planear, implementar, integrar, validar o cerrar una característica 
 - Antes de reportar progreso, comparar lista original contra casos `verified`, `partial`, `blocked`, `not-started`; **ningún caso desaparece del reporte**.
 - Si una IA informa "todo listo", cotejar archivos/commits, pruebas ejecutadas y criterios originales. Reportar discrepancias sin atribuir mala fe.
 - Ante ambigüedad, documentar decisión pendiente y no inventar balance ni funciones.
-- Elegir Skills auxiliares según riesgo: móvil, rendimiento, PR, guardado, combate, arte/licencias.
+- Elegir Skills auxiliares según riesgo: móvil, rendimiento, guardado, arte/licencias. La protección de integración PR se aplica aquí, no requiere Skill separada.
 - No generar más documentación que la necesaria para ejecutar y verificar la tarea.
 
 ## Ejercicio de aceptación obligatorio
