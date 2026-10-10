@@ -6,22 +6,22 @@
       "actor": "structures/celts/storehouse.xml",
       "tiles": 2,
       "size": [
-        256,
-        256
+        320,
+        320
       ],
       "shift_y": 0.12,
       "extra_props": [
         {
           "actor": "props/special/eyecandy/wood_pile_1_a.xml",
-          "x": 7,
-          "y": -3,
+          "x": 6,
+          "y": -5,
           "rot": 30
         },
         {
-          "actor": "props/special/eyecandy/wood_pile_1_b.xml",
-          "x": 3,
+          "actor": "props/special/eyecandy/wood_pile.xml",
+          "x": 2,
           "y": -8,
-          "rot": -20
+          "rot": -15
         }
       ]
     },
@@ -30,15 +30,15 @@
       "actor": "structures/gauls/storehouse.xml",
       "tiles": 2,
       "size": [
-        256,
-        256
+        320,
+        320
       ],
       "shift_y": 0.12,
       "extra_props": [
         {
           "actor": "props/special/eyecandy/stone_pile.xml",
-          "x": 10,
-          "y": -6,
+          "x": 6,
+          "y": -3,
           "rot": 0
         }
       ]
