@@ -5,8 +5,8 @@ name: Renderizar arte de 0 A.D.
 on:
   workflow_dispatch:
   push:
-    branches: [feat/military-art]
-    paths: [scripts/art/zeroad.py, scripts/art/zeroad-config.json, .github/workflows/render-0ad.yml]
+    branches: [feat/military-art, feat/villager-task-art]
+    paths: [scripts/art/zeroad.py, 'scripts/art/zeroad*.json', .github/workflows/render-0ad.yml]
 
 permissions:
   contents: write
@@ -31,13 +31,18 @@ jobs:
         run: |
           git clone -q --depth 1 --filter=blob:none --no-checkout https://github.com/0ad/0ad.git zeroad
           echo "0ad@$(git -C zeroad rev-parse HEAD)" > zeroad-commit.txt
-          python3 scripts/art/zeroad.py fetch zeroad scripts/art/zeroad-config.json | head -5
+          for cfg in scripts/art/zeroad*.json; do python3 scripts/art/zeroad.py fetch zeroad "$cfg" | head -3; done
 
       - name: Renderizar
         run: |
           set -o pipefail
-          ./blender/blender -b --factory-startup -P scripts/art/zeroad.py -- render zeroad scripts/art/zeroad-config.json renders 2>&1 | grep -v "^Fra:\|^ Time\|Saved:" > render.log
-          test -f renders/meta.json
+          : > render.log
+          # Cada configuración (zeroad-config.json = militar, zeroad-villager.json = aldeano) va a su carpeta.
+          for cfg in scripts/art/zeroad*.json; do
+            name=$(basename "$cfg" .json)
+            ./blender/blender -b --factory-startup -P scripts/art/zeroad.py -- render zeroad "$cfg" "renders/$name" 2>&1 | grep -v "^Fra:\|^ Time\|Saved:" >> render.log
+            test -f "renders/$name/meta.json"
+          done
 
       - name: Registro del render (legible desde el móvil)
         if: always()
@@ -50,9 +55,9 @@ jobs:
 
       - name: Publicar en la rama «renders-0ad»
         run: |
-          cp zeroad-commit.txt renders/
+          for d in renders/*/; do cp zeroad-commit.txt "$d"; done
           git -C zeroad checkout HEAD -- binaries/data/mods/public/art/LICENSE.txt
-          cp zeroad/binaries/data/mods/public/art/LICENSE.txt renders/LICENSE-0AD.txt
+          for d in renders/*/; do cp zeroad/binaries/data/mods/public/art/LICENSE.txt "$d/LICENSE-0AD.txt"; done
           cd renders
           echo "::notice title=Renders::$(find . -name '*.png' | wc -l) imágenes"
           git init -q
@@ -60,4 +65,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -q -m "Renders de ${GITHUB_SHA::7}"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/renders-0ad
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/renders-0ad-${GITHUB_REF_NAME//\//-}

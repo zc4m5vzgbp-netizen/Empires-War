@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Empaqueta los renders de 0 A.D. (rama «renders-0ad») en el atlas militar del juego.
 
-Uso: python3 scripts/art/build-0ad-atlas.py <carpeta_renders>
+Uso: python3 scripts/art/build-0ad-atlas.py <carpeta_renders> [carpeta_salida] [prefijo]
+  militar: … renders/zeroad-config            public/assets/0ad          mil
+  aldeano: … renders/zeroad-villager          public/assets/0ad-villager eco
 Salida: public/assets/0ad/atlas.png + atlas.json (JSON Hash de Phaser con anclas) + CREDITS.md + LICENSE-0AD.txt
 
 Los renders salen al doble de densidad; aquí se reducen a la escala del juego (64 px por casilla).
@@ -25,16 +27,16 @@ def clean(im: Image.Image) -> Image.Image:
     return Image.merge('RGBA', (r, g, b, a))
 
 
-def main(src: Path, out: Path) -> None:
+def main(src: Path, out: Path, prefix: str = 'mil') -> None:
     meta = json.loads((src / 'meta.json').read_text())
     items = []  # (clave, imagen, pivote x/y en píxeles de la imagen final)
     touches_top = {}
     for key, m in meta.items():
         if 'anims' in m:
-            paths = [(f'mil/{key}/{a}/{d}/{i}', src / key / a / str(d) / f'{i}.png')
+            paths = [(f'{prefix}/{key}/{a}/{d}/{i}', src / key / a / str(d) / f'{i}.png')
                      for a, n in m['anims'].items() for d in DIRS for i in range(n)]
         else:
-            paths = [(f'mil/{key}', src / key / 'idle.png')]
+            paths = [(f'{prefix}/{key}', src / key / 'idle.png')]
         ims = [(k, clean(Image.open(p).convert('RGBA'))) for k, p in paths]
         # ¿Algún fotograma toca el borde superior del render? Entonces la figura está cortada.
         touches_top[key] = any(im.split()[3].crop((0, 0, im.width, 1)).getbbox() is not None for _, im in ims)
@@ -85,13 +87,13 @@ def main(src: Path, out: Path) -> None:
     for u, n in units.items():
         figure_heights[u] = {}
         for a in n:
-            if a == 'death':
-                continue  # tumbado: otra altura por naturaleza
+            if a == 'death' or a not in ('idle', 'walk', 'attack'):
+                continue  # tumbado o agachado (tareas): otra altura por naturaleza
             # Tamaño lineal = raíz del número de píxeles casi opacos (la sombra es semitransparente y no cuenta).
-            alpha = by_key[f'mil/{u}/{a}/270/0'].split()[3]
+            alpha = by_key[f'{prefix}/{u}/{a}/270/0'].split()[3]
             figure_heights[u][a] = round(sum(alpha.histogram()[201:]) ** 0.5, 1)
     walk_distinct = all(
-        len({by_key[f'mil/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
+        len({by_key[f'{prefix}/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
         'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top}}, separators=(',', ':')), encoding='utf-8')
@@ -101,4 +103,6 @@ def main(src: Path, out: Path) -> None:
 
 
 if __name__ == '__main__':
-    main(Path(sys.argv[1]), Path(__file__).resolve().parents[2] / 'public' / 'assets' / '0ad')
+    root = Path(__file__).resolve().parents[2]
+    out = root / (sys.argv[2] if len(sys.argv) > 2 else 'public/assets/0ad')
+    main(Path(sys.argv[1]), out, sys.argv[3] if len(sys.argv) > 3 else 'mil')
