@@ -5,7 +5,7 @@ import { issueCommand } from '../src/simulation/commands.ts';
 import { decodeSave, encodeSave } from '../src/persistence/saveFormat.ts';
 import { constructionRatio } from '../src/simulation/construction.ts';
 import { findPlacementNear } from '../src/simulation/placement.ts';
-import { addEntity, createWorld, entityList, newVillager, stepWorld } from '../src/simulation/world.ts';
+import { addEntity, createWorld, entityList, hashWorld, newVillager, stepWorld } from '../src/simulation/world.ts';
 
 test('Campamentos: huella 2x2 y depósitos separados por recurso', () => {
   assert.equal(BUILDINGS.lumberCamp.size, 2);
