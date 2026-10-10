@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { ENGINE, TEST_MAP } from '../src/content/config.ts';
 import { BERRY_BUSH, BLOCK1_SCENARIO, BUILDINGS, PLAYER_ID, STARTING_STOCKPILE, VILLAGER } from '../src/content/economy.ts';
 import { TerrainKind } from '../src/content/terrain.ts';
+import { isTerrainWalkable } from '../src/simulation/grid.ts';
 import { decodeSave, encodeSave } from '../src/persistence/saveFormat.ts';
 import { withSavePause } from '../src/persistence/savePause.ts';
 import { advanceClock, createFixedClock } from '../src/simulation/clock.ts';
@@ -52,8 +53,8 @@ test('Escenario: Centro Urbano, 3 aldeanos y cuatro recursos, con IDs estables c
   assert.deepEqual(w.players[PLAYER_ID]!.stockpile, STARTING_STOCKPILE.value);
   assert.deepEqual(entityList(w).map((e) => e.id), Array.from({ length: 18 }, (_, i) => i + 1));
   assert.equal(w.nextEntityId, 19);
-  // Todo el escenario está sobre terreno transitable.
-  for (const e of entityList(w)) assert.equal(w.map.terrain[e.y * w.map.width + e.x], TerrainKind.Grass, `entidad ${e.id}`);
+  // Todas las entidades iniciales están sobre terreno transitable (hierba o tierra).
+  for (const e of entityList(w)) assert.ok(isTerrainWalkable(w, e.x, e.y), `entidad ${e.id} sobre terreno bloqueado`);
 });
 
 test('A*: rodea obstáculos, no corta esquinas y devuelve null si no hay camino', () => {
