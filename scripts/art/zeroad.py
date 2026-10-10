@@ -200,7 +200,19 @@ def render(repo: str, cfg: dict, out: str) -> None:
         before = set(bpy.data.objects)
         bpy.ops.wm.collada_import(filepath=res.path(rel), fix_orientation=False, find_chains=False,
                                   auto_connect=False, keep_bind_info=True)
-        return [o for o in bpy.data.objects if o not in before]
+        new = [o for o in bpy.data.objects if o not in before]
+        # 0 A.D. ignora la etiqueta <unit> (usa los números tal cual), pero Blender escala por ella: se deshace.
+        meter = 1.0
+        try:
+            u = ET.parse(res.path(rel)).getroot().find('.//{http://www.collada.org/2005/11/COLLADASchema}unit')
+            meter = float(u.get('meter', '1')) if u is not None else 1.0
+        except Exception:
+            pass
+        if abs(meter - 1.0) > 1e-6:
+            for o in new:
+                if o.parent is None:
+                    o.scale = o.scale * (1.0 / meter)
+        return new
 
     def find_point(objs, point):
         names = {f'prop-{point}', f'prop_{point}', point}
@@ -273,7 +285,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
         root = arm
         while root.parent is not None:
             root = root.parent
-        root.scale = (u.get('scale', 2.0),) * 3
+        root.scale = root.scale * u.get('scale', 2.0)
         size = tuple(u.get('size', [128, 128]))
         debug(u['key'], objs)
         frame_box(cam, objs, size)
@@ -323,8 +335,8 @@ def render(repo: str, cfg: dict, out: str) -> None:
         extent = max(max(xs) - min(xs), max(ys) - min(ys))
         scale = b['tiles'] * 4.0 / extent * b.get('fill', 1.0)
         for o in objs:
-            if o.parent is None:
-                o.scale = (scale,) * 3
+            if o.parent is None and not o.constraints:
+                o.scale = o.scale * scale
                 o.rotation_euler = (0, 0, math.radians(b.get('rotate', 0)))
         size = tuple(b.get('size', [384, 384]))
         debug(b['key'], objs)
