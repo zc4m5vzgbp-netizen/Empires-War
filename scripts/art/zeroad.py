@@ -412,6 +412,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
             for r in [o for o in eobjs if o.parent is None and not o.constraints]:
                 r.location = (e.get('x', 0.0), e.get('y', 0.0), 0.0)
                 r.rotation_euler = (0, 0, math.radians(e.get('rot', 0)))
+                r.scale = r.scale * e.get('scale', 1.0)
                 if host is not None:
                     bpy.context.view_layer.update()
                     mw = r.matrix_world.copy()
