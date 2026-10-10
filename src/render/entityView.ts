@@ -72,7 +72,7 @@ export class EntityView {
     if (e.kind === 'resource') {
       return {
         kind: e.kind,
-        main: add.image(0, 0, BUSH_KEY).setOrigin(BUSH_ORIGIN.x, BUSH_ORIGIN.y),
+        main: add.image(0, 0, BUSH_KEY).setOrigin(BUSH_ORIGIN.x, BUSH_ORIGIN.y).setTint(({ berryBush: 0xffffff, tree: 0x3e9955, goldMine: 0xe5bb43, stoneMine: 0x9ba7b4 } as const)[e.type]),
         ring: add.image(0, 0, outlineKey(1)).setVisible(false),
       };
     }
@@ -109,7 +109,7 @@ export class EntityView {
           .setVisible(e.carryAmount > 0);
       } else if (e.kind === 'resource') {
         const pos = tileToWorld(e.x, e.y);
-        const fullness = Math.max(0, Math.min(1, e.amount / BERRY_BUSH.food));
+        const fullness = Math.max(0, Math.min(1, e.amount / (e.type === 'berryBush' ? BERRY_BUSH.food : e.type === 'tree' ? 150 : 500)));
         view.main.setPosition(pos.x, pos.y + 4).setDepth(pos.y + 4).setScale(0.65 + 0.35 * fullness);
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 1).setVisible(isSelected);
       } else {
