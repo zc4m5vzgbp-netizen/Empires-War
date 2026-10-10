@@ -371,3 +371,19 @@ button:active:not(:disabled) {
     font-size: 11px;
   }
 }
+
+/* VIS-07: permitir descubrir minas y objetivos tapados por el panel en pantallas táctiles. */
+.panel-toggle {
+  display: block;
+  margin: 0 0 6px auto;
+  min-height: 44px;
+}
+.panel-collapsed {
+  right: auto;
+  width: auto;
+  max-width: min(260px, calc(100vw - 128px));
+  padding: 2px 4px;
+}
+.panel-collapsed .panel-toggle {
+  margin: 0;
+}
