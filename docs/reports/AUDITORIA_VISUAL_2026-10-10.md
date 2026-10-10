@@ -11,7 +11,7 @@
 
 | Elemento | Veredicto | Razón |
 |---|---|---|
-| Arte de #18, con la corrección de esta auditoría (PR de `fix/visual-audit-2026-10-10`) | **APTO para integración** | Los atlas están completos y tienen licencia. La aldeana y los campamentos se integraron de verdad en la partida normal, en una rama de auditoría, con el smoke verde en WebKit y Chromium (perfil iPhone 15 Pro Max). |
+| Arte de #18, con la corrección de esta auditoría (PR #20, `fix/visual-audit-2026-10-10`) | **APTO para integración** | Los atlas están completos y tienen licencia. La aldeana y los campamentos se integraron de verdad en la partida normal, en una rama de auditoría, con el smoke verde en WebKit y Chromium (perfil iPhone 15 Pro Max). |
 | Estado actual de #19 como integración final | **NO APTO todavía** | Los atlas no se cargan en la partida. Los campamentos no pueden usar su atlas: `ART_BUILDINGS` solo admite la textura `uh`. Además hay dos problemas de interfaz en iPhone: I-4 e I-5. CI verde ≠ integración completa. |
 
 ## Errores críticos
