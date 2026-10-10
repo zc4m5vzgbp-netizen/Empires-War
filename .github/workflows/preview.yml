@@ -4,6 +4,9 @@ name: Vista previa aislada
 # No toca GitHub Pages ni el juego principal.
 on:
   workflow_dispatch:
+  # Se actualiza sola con cada cambio en la rama visual.
+  push:
+    branches: [feat/visual-upgrade]
 
 permissions:
   contents: write
