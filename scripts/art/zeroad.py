@@ -337,7 +337,9 @@ def render(repo: str, cfg: dict, out: str) -> None:
             frames = [start + (end - start) * i / (n if loop else max(1, n - 1)) for i in range(n)]
             meta[u['key']]['anims'][key] = n
             sc.frame_set(int(start))
-            debug(f"{u['key']}:{key}", objs)
+            if key == 'idle':
+                for o in bpy.data.objects:
+                    print('OBJ_GRANDE', u['key'], 'escena', o.name, o.type, [round(x, 1) for x in o.dimensions], o.hide_render, flush=True)
             print('RENDER', u['key'], key, f, f'{start}-{end}', flush=True)
             for d in range(8):
                 ang = d * 45
