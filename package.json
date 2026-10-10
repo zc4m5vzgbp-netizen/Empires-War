@@ -15,10 +15,12 @@
     "test": "tsx --test tests/*.test.ts",
     "verify:dist": "node scripts/verify-dist.mjs",
     "check": "npm run typecheck && npm test && npm run build && npm run verify:dist",
-    "smoke:browser": "node scripts/browser-smoke.mjs"
+    "smoke:browser": "node scripts/browser-smoke.mjs",
+    "e2e:cloud": "node scripts/cloud-e2e.mjs"
   },
   "dependencies": {
     "phaser": "4.2.1",
+    "@supabase/supabase-js": "2.117.3",
     "preact": "10.29.8"
   },
   "devDependencies": {

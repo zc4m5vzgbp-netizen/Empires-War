@@ -4,7 +4,6 @@ name: Generar package-lock.json
 on:
   workflow_dispatch:
   push:
-    branches: [main]
     paths: [package.json]
 
 permissions:

@@ -115,13 +115,45 @@ export function terrainAt(map: WorldMap, x: number, y: number): number | undefin
   return map.terrain[y * map.width + x];
 }
 
-/** Huella del estado completo (FNV-1a de 32 bits sobre el JSON). Sirve para comparar estados. */
+/**
+ * Huella del estado completo (FNV-1a de 32 bits sobre un JSON canónico: claves ordenadas).
+ * No depende del orden de las claves, porque la nube (jsonb de PostgreSQL) las reordena al guardar.
+ */
 export function hashWorld(state: WorldState): string {
-  const text = JSON.stringify(state);
   let h = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
+  const feed = (text: string) => {
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+  };
+  const walk = (v: unknown): void => {
+    if (v === null || typeof v !== 'object') {
+      feed(v === undefined ? 'null' : JSON.stringify(v));
+      return;
+    }
+    if (Array.isArray(v)) {
+      feed('[');
+      for (let i = 0; i < v.length; i++) {
+        if (i) feed(',');
+        walk(v[i]);
+      }
+      feed(']');
+      return;
+    }
+    const obj = v as Record<string, unknown>;
+    const keys = Object.keys(obj)
+      .filter((k) => obj[k] !== undefined)
+      .sort();
+    feed('{');
+    keys.forEach((k, i) => {
+      if (i) feed(',');
+      feed(JSON.stringify(k));
+      feed(':');
+      walk(obj[k]);
+    });
+    feed('}');
+  };
+  walk(state);
   return h.toString(16).padStart(8, '0');
 }

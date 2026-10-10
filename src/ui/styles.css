@@ -335,6 +335,55 @@ button:active:not(:disabled) {
   border: 3px solid var(--wood-edge);
   border-radius: 6px;
   pointer-events: auto;
+  /* El menú crece con la lista de imperios: se desplaza dentro en lugar de salirse de la pantalla. */
+  max-height: calc(100% - env(safe-area-inset-top, 0px) - 110px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.menu input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  /* 16px evita que Safari en iPhone amplíe la página al escribir. */
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 2px solid var(--wood-edge);
+  border-radius: 6px;
+}
+
+.menu-actions.login,
+.menu-actions.slots,
+.menu-actions.conflict {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.menu-actions.login .menu-note,
+.menu-actions.slots .menu-note {
+  margin: 4px 0 0;
+}
+
+.menu-status {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  background: #e9dfc4;
+  border-left: 4px solid var(--wood-edge);
+}
+
+.menu-status.status-ready {
+  border-left-color: #3f7a3a;
+}
+
+.menu-status.status-offline,
+.menu-status.status-conflict {
+  background: #f6dccf;
+  border-left-color: var(--danger);
 }
 
 .menu .panel-title {

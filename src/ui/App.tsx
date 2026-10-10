@@ -13,8 +13,16 @@ export interface AppActions {
   togglePause(): void;
   toggleBoxMode(): void;
   save(): void;
-  load(): void;
+  emailLogin(email: string): void;
+  verifyEmailCode(email: string, code: string): void;
+  logout(): void;
+  chooseSlot(id: string): void;
+  newEmpire(fromCurrent: boolean): void;
+  resolveConflict(choice: 'cloud' | 'mine-as-new'): void;
+  retry(): void;
 }
+
+const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' }) : '—');
 
 const millCost = Object.entries(BUILDINGS.mill.cost)
   .map(([r, n]) => `${n} ${RESOURCE_LABELS[r as keyof typeof RESOURCE_LABELS].toLowerCase()}`)
@@ -24,6 +32,8 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
   const [s, setState] = useState(store.get());
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   useEffect(() => {
     const unsubscribe = store.subscribe(setState);
     return () => {
@@ -41,6 +51,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
   };
 
   const sel = s.selection;
+  const c = s.cloud;
   const place = s.placement;
 
   return (
@@ -141,16 +152,77 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
       {menuOpen && (
         <div class="menu" role="dialog" aria-label="Partida">
           <p class="panel-title">Partida</p>
+          <p class={`menu-status status-${c.phase}`} data-phase={c.phase} role="status">
+            {c.busy ? 'Sincronizando… · ' : ''}
+            {c.status}
+          </p>
+
+          {!c.user ? (
+            <div class="menu-actions login">
+              <p class="menu-note">Inicia sesión con tu correo para guardar en la nube y seguir en otro dispositivo.</p>
+              <label class="menu-note" for="cloud-email">Correo electrónico</label>
+              <input id="cloud-email" type="email" autoComplete="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} placeholder="tu@correo.com" />
+              <button type="button" disabled={!email.includes('@')} onClick={() => actions.emailLogin(email)}>Enviar correo de acceso</button>
+              <label class="menu-note" for="cloud-code">Abre el enlace del correo, o escribe aquí el código que trae:</label>
+              <input id="cloud-code" type="text" inputMode="numeric" autoComplete="one-time-code" value={code} onInput={(e) => setCode(e.currentTarget.value)} placeholder="Código del correo" />
+              <button type="button" disabled={!email.includes('@') || code.trim().length < 6} onClick={() => actions.verifyEmailCode(email, code)}>Confirmar código</button>
+            </div>
+          ) : (
+            <>
+              <p class="menu-note">Cuenta: {c.user}</p>
+              {c.activeTitle && (
+                <p class="menu-note">
+                  Imperio actual: <strong>{c.activeTitle}</strong>
+                  {c.revision > 0 ? ` · revisión ${c.revision}` : ' · aún no está en la nube'}
+                  {c.unsynced ? ' · cambios sin subir' : ''}
+                </p>
+              )}
+              {c.phase === 'conflict' && (
+                <div class="menu-actions conflict">
+                  <button type="button" onClick={() => actions.resolveConflict('cloud')}>Usar la versión de la nube</button>
+                  <button type="button" class="primary" onClick={() => actions.resolveConflict('mine-as-new')}>Guardar la mía como imperio nuevo</button>
+                </div>
+              )}
+              {c.phase === 'offline' && (
+                <div class="menu-actions">
+                  <button type="button" disabled={c.busy} onClick={actions.retry}>Reintentar ahora</button>
+                </div>
+              )}
+              {c.phase === 'choose' && (
+                <div class="menu-actions">
+                  <button type="button" class="primary" disabled={c.busy} onClick={() => actions.newEmpire(true)}>Guardar mi progreso como imperio nuevo</button>
+                </div>
+              )}
+            </>
+          )}
+
           <div class="menu-actions">
             <button type="button" onClick={actions.togglePause}>{s.paused ? 'Reanudar' : 'Pausar'}</button>
-            <button type="button" class="primary" disabled={s.saving} onClick={actions.save}>
-              {s.saving ? 'Guardando…' : 'Guardar'}
+            <button type="button" class="primary" disabled={c.busy || c.phase === 'conflict'} onClick={actions.save}>
+              {c.busy ? 'Guardando…' : 'Guardar'}
             </button>
-            <button type="button" disabled={s.saving} onClick={actions.load}>Cargar</button>
           </div>
-          <p class="menu-note">{s.lastSavedAt ? `Último guardado: ${s.lastSavedAt}` : 'Aún no hay partida guardada en esta sesión.'}</p>
+
+          {c.user && c.phase !== 'connecting' && (
+            <div class="menu-actions slots">
+              <p class="menu-note">Tus imperios</p>
+              {c.slots.map((slot) => (
+                <button type="button" key={slot.id} disabled={c.busy || slot.id === c.activeId} onClick={() => actions.chooseSlot(slot.id)}>
+                  {slot.id === c.activeId ? '▶ ' : ''}
+                  {slot.title} · {when(slot.updatedAt)}
+                </button>
+              ))}
+              <button type="button" disabled={c.busy || c.phase === 'conflict'} onClick={() => actions.newEmpire(false)}>Nuevo imperio desde cero</button>
+              <button type="button" disabled={c.busy} onClick={actions.logout}>Cerrar sesión</button>
+            </div>
+          )}
+
+          <p class="menu-note">
+            Nube: {when(c.lastCloudSave)} · Este dispositivo: {when(c.lastLocalSave)}
+          </p>
           <p class="menu-warning">
-            Las partidas se guardan solo en este navegador. Si borras los datos de Safari o de este sitio, se pierden.
+            Se guarda solo cada 30 s y al salir del juego. Safari puede cerrar el juego en segundo plano: lo último queda en este
+            dispositivo y se sube al volver con conexión. Antes de cambiar de dispositivo, espera a ver «Guardado en la nube».
           </p>
           <button type="button" class="menu-close" onClick={() => setMenuOpen(false)}>Cerrar</button>
         </div>

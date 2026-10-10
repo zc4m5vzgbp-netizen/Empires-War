@@ -1,4 +1,5 @@
 import type { Stockpile } from '../content/economy.ts';
+import type { ManagerView } from '../persistence/saveManager.ts';
 import type { PlacementSummary, SelectionSummary } from '../input/controller.ts';
 
 // Almacén mínimo para que el render informe a la interfaz sin acoplarlas.
@@ -18,8 +19,8 @@ export interface HudState {
   boxMode: boolean;
   /** Recuadro de selección en pantalla mientras se arrastra. */
   box: { x: number; y: number; w: number; h: number } | null;
-  saving: boolean;
-  lastSavedAt: string | null;
+  /** Estado del guardado (dispositivo + nube), lo publica saveManager. */
+  cloud: ManagerView;
   toast: { id: number; text: string; kind: 'info' | 'error' } | null;
   error: string | null;
 }

@@ -150,49 +150,20 @@ async function mobileFlow(browserType, name) {
     await T(page, 'setTimeScale', 1);
     step('Molino construido por el aldeano');
 
-    // 5. Guardar.
+    // 5. Sin sesión: guarda SOLO en el dispositivo, nunca anuncia «Guardado en la nube», y sobrevive a recargar.
     await page.getByRole('button', { name: 'Partida' }).tap();
     await page.getByRole('button', { name: 'Guardar' }).tap();
-    await page.getByText('Partida guardada.').waitFor({ timeout: 8000 });
-    const savedHash = await T(page, 'lastSavedHash');
-    if (!savedHash) throw new Error('no se registró la huella del guardado');
+    await page.getByText('Sin sesión: guardado solo en este dispositivo.').waitFor({ timeout: 8000 });
+    if (await T(page, 'lastSavedHash')) throw new Error('guardado en la nube falsamente confirmado sin sesión');
     if (await T(page, 'paused')) throw new Error('el juego quedó en pausa tras guardar');
-    step('partida guardada; el juego sigue en marcha');
-
-    // 6. Cargar en la misma sesión: el estado vuelve exactamente al guardado.
-    await sleep(600);
-    if ((await T(page, 'hash')) === savedHash) throw new Error('el mundo no avanzó tras guardar');
-    await page.getByRole('button', { name: 'Cargar' }).tap();
-    await page.getByText(/Partida cargada/).waitFor({ timeout: 8000 });
-    if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('la carga no restauró el estado guardado');
-    step('carga en la misma sesión: huella idéntica');
-
-    // 7. Recargar la página y cargar: persiste en IndexedDB.
-    await open(page);
-    w = await T(page, 'world');
-    if (mills(w).length !== 0) throw new Error('la página recargada debería empezar sin Molino');
-    await page.getByRole('button', { name: 'Partida' }).tap();
-    await page.getByRole('button', { name: 'Cargar' }).tap();
-    await page.getByText(/Partida cargada/).waitFor({ timeout: 8000 });
-    if ((await T(page, 'lastLoadedHash')) !== savedHash) throw new Error('tras recargar, la partida no coincide');
-    w = await T(page, 'world');
-    if (mills(w).length !== 1 || !mills(w)[0].complete || w.players['1'].stockpile.wood !== 100) throw new Error('estado cargado incompleto');
-    await waitFor(async () => {
-      const ui2 = await readStockpileUi(page);
-      return ui2.wood === 100 && ui2.food >= 210;
-    }, 3000, 'reserva cargada en pantalla');
-    step('recarga de la página + Cargar: Molino, madera y comida restaurados (IndexedDB)');
-
-    // 8. Guardar con el juego en pausa: sigue en pausa.
-    await page.getByRole('button', { name: 'Pausar' }).tap();
-    const tick0 = (await T(page, 'world')).tick;
-    await page.getByRole('button', { name: 'Guardar' }).tap();
-    await page.getByText('Partida guardada.').waitFor({ timeout: 8000 });
-    await sleep(600);
-    if (!(await T(page, 'paused')) || (await T(page, 'world')).tick !== tick0) throw new Error('guardar quitó la pausa');
-    await page.getByRole('button', { name: 'Reanudar' }).tap();
-    await waitFor(async () => (await T(page, 'world')).tick > tick0, 3000, 'reanudar');
-    step('guardar en pausa conserva la pausa');
+    // (el aviso fijo del menú menciona «Guardado en la nube» como texto a esperar; se revisan estado y avisos)
+    if ((await page.locator('.menu-status, .toast').filter({ hasText: 'Guardado en la nube' }).count()) > 0) throw new Error('la interfaz anuncia guardado en la nube sin sesión');
+    step('sin sesión: guardado solo en el dispositivo, sin anunciar la nube; el juego sigue en marcha');
+    const millsBefore = mills(await T(page, 'world')).length;
+    await page.reload({ waitUntil: 'load' });
+    await waitFor(async () => (await page.evaluate(() => Boolean(window.__EW_TEST__))), 15000, 'juego tras recargar');
+    await waitFor(async () => mills(await T(page, 'world')).length === millsBefore, 15000, 'progreso sin cuenta recuperado tras recargar');
+    step('sin sesión: el progreso se recupera tras cerrar y abrir (copia del dispositivo)');
 
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
     await sleep(2500);
