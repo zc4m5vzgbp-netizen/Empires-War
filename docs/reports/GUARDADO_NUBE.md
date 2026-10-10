@@ -64,3 +64,23 @@ Fallos reales que encontró esta prueba y que ya están corregidos:
    - El SMTP por defecto de Supabase tiene un límite muy bajo de correos por hora y puede enviar solo a miembros del equipo del proyecto.
 3. Prueba final del usuario en iPhone.
 4. Fusionar el PR #3 y publicar.
+
+## Estado por requisito (revisado el 2026-10-09, commit ca15b4c)
+
+| Requisito | Estado | Cómo se comprobó |
+|---|---|---|
+| Inicio de sesión por correo | Implementado. **Sin probar con un correo real** | La prueba real usa contraseña (cuentas temporales); el envío del correo depende de la configuración del panel |
+| Guardado real en Supabase con revisión | Comprobado | Prueba real: revisiones 1→4 y huella idéntica en la nube |
+| Solo confirma guardados exitosos | Comprobado | Prueba real sin red y pruebas unitarias |
+| Recuperación tras cerrar el navegador | Comprobado en Chromium/WebKit | Recarga (prueba real) y sin sesión (prueba de navegador) |
+| Varios imperios | Comprobado | Prueba real |
+| Sin sobrescrituras accidentales | Comprobado | Conflicto real con código EW409 |
+| Autoguardado verificable | Comprobado | Prueba real: revisión 4 |
+| Recuperación de fallos de conexión | Comprobado | Prueba real (sin red y reintento) y pruebas unitarias |
+| Pausa durante el guardado (§3.8) | Comprobado | Pruebas unitarias y prueba real (seguía en pausa) |
+| Aislamiento entre cuentas (RLS) | Comprobado | Prueba real con la cuenta B |
+| Escritura solo mediante save_empire | **Pendiente** | Migración sin aprobar |
+| Funciona en iPhone real (Safari) | **Sin probar** | Solo WebKit con perfil de iPhone en CI |
+| Google/Apple | Fuera de alcance | Ocultos; no bloquean |
+
+Modularidad: el gestor (`saveManager.ts`) no conoce la simulación. Solo usa `capture`/`restore`/`reset` (en `main.ts`) y `saveFormat.ts`. Si cambia la simulación, se adaptan esas dos piezas sin tocar la autenticación ni la sincronización.
