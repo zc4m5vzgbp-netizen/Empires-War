@@ -25,8 +25,8 @@ export const ART_BUILDINGS: Partial<Record<BuildingType, { frame: string; drawnS
 };
 
 /** Ancla (pies o centro de la huella) guardada en el atlas por el script de construcción. */
-export function pivot(scene: Phaser.Scene, frame: string): { x: number; y: number } {
-  const f = scene.textures.getFrame(ART, frame) as Phaser.Textures.Frame & { pivotX?: number; pivotY?: number; customPivot?: boolean };
+export function pivot(scene: Phaser.Scene, frame: string, texture = ART): { x: number; y: number } {
+  const f = scene.textures.getFrame(texture, frame) as Phaser.Textures.Frame & { pivotX?: number; pivotY?: number; customPivot?: boolean };
   return f?.customPivot ? { x: f.pivotX ?? 0.5, y: f.pivotY ?? 0.5 } : { x: 0.5, y: 0.8 };
 }
 

@@ -174,6 +174,30 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | VIS-06 | Toque sobre oro, piedra y madera emite la orden y deposita +10 (regresión del informe «la piedra no responde») | probado | Prueba de navegador, paso 4b, en WebKit y Chromium |
 | VIS-07 | Los recursos no quedan tapados por la interfaz en la cámara inicial | **pendiente** | Diagnóstico en la prueba de navegador: con un aldeano seleccionado, la piedra queda bajo el panel y el oro bajo los botones |
 
+## Arte militar (MIL) — rama `feat/military-art` (PR #11)
+
+| ID | Función | Estado | Prueba / evidencia |
+|---|---|---|---|
+| MIL-01 | Render reproducible de 0 A.D. a sprites (Blender en CI) | probado | Workflow «Renderizar arte de 0 A.D.» (401 imágenes) |
+| MIL-02 | Espadachín: quieto, andar, atacar y morir en 8 direcciones | probado (sin iPhone) | `tests/military-art.test.ts`; galería en la prueba de navegador (WebKit iPhone) |
+| MIL-03 | Arquero: quieto, andar, disparar y morir en 8 direcciones | probado (sin iPhone) | Ídem |
+| MIL-04 | Cuartel a escala 3×3 | probado (sin iPhone) | `tests/military-art.test.ts`; captura de la galería |
+| MIL-05 | Colores de jugador variables | pendiente | El azul va incluido en el render |
+| MIL-06 | Animación de recibir daño | pendiente | 0 A.D. no la tiene; se propone un destello |
+| MIL-07 | Milicia, lancero, caballería, arquería y establo | pendiente | Basta con añadir sus actores a la configuración |
+
+## Arte económico (ECO-ART) — ramas `feat/villager-task-art` (PR #13) y `feat/economy-camps-art`
+
+| ID | Función | Estado | Prueba / evidencia |
+|---|---|---|---|
+| ECO-ART-01 | Aldeana con idle, walk, chop, mine, forage, farm, build y carry/<recurso> en 8 direcciones | probado (sin iPhone) | `tests/villager-art.test.ts`; galería en la prueba de navegador (120 animaciones) |
+| ECO-ART-02 | Campamento maderero 2×2 | probado (sin iPhone) | `tests/camps-art.test.ts`; captura de la galería |
+| ECO-ART-03 | Campamento minero 2×2 | probado (sin iPhone) | Ídem |
+| ECO-ART-04 | Casa, granja (3 estados) e indicadores de producción | pendiente | Siguientes lotes |
+| ECO-ART-05 | Colores de jugador y oro diferenciado | pendiente | — |
+| ECO-ART-06 | Sombra de la aldeana sin cortes rectos en el borde del fotograma (auditoría 2026-10-10) | probado | `tests/villager-art.test.ts` (falla con el atlas anterior: 209/680 fotogramas cortados) |
+| ECO-ART-07 | Aldeana y campamentos dibujados en la partida normal (no solo galería) | probado en rama de auditoría, sin integrar | `audit/claude-visual-integration`: smoke 4c en WebKit y Chromium (perfil iPhone); iPhone físico pendiente |
+
 ## Funciones reservadas para el futuro (NO implementar ahora, §12)
 
 | ID | Función | Estado |

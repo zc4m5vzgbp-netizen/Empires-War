@@ -16,6 +16,9 @@ import { tileToWorld } from './iso.ts';
 import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './textures.ts';
 import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
+import { createMilitaryAnimations, galleryEnabled, preloadMilitary } from './militaryArt.ts';
+import { createVillagerAnimations, preloadVillagerArt } from './villagerArt.ts';
+import { preloadCampArt } from './campArt.ts';
 import { groundFrame } from './terrainArt.ts';
 
 export interface GameSceneDeps {
@@ -55,6 +58,11 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     preloadArt(this);
+    if (galleryEnabled()) {
+      preloadMilitary(this);
+      preloadVillagerArt(this);
+      preloadCampArt(this);
+    }
   }
 
   create(): void {
@@ -64,7 +72,11 @@ export class GameScene extends Phaser.Scene {
     if (art) createArtAnimations(this);
     if (art) this.drawArtTerrain();
     else this.drawTerrain();
-    if (art && new URLSearchParams(location.search).has('galeria')) addGallery(this);
+    if (art && galleryEnabled()) {
+      createMilitaryAnimations(this);
+      createVillagerAnimations(this);
+      addGallery(this);
+    }
     this.entities = new EntityView(this, art);
     this.ghostFootprint = this.add.image(0, 0, footprintKey(2, true)).setVisible(false).setDepth(1e6);
     this.ghost = this.add.image(0, 0, buildingKey('mill')).setVisible(false).setAlpha(0.55).setDepth(1e6 + 1);
