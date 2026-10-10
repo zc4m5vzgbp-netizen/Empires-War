@@ -150,6 +150,44 @@ async function mobileFlow(browserType, name) {
     await T(page, 'setTimeScale', 1);
     step('Molino construido por el aldeano');
 
+    // 4b. Oro, piedra y madera: recorrido completo toque → orden → recolectar → depositar (regresión: piedra).
+    //     Se toca el centro del dibujo de cada recurso, como haría el jugador.
+    await T(page, 'setTimeScale', 10);
+    for (const [type, res] of [['goldMine', 'gold'], ['stoneMine', 'stone'], ['tree', 'wood']]) {
+      let ww = await T(page, 'world');
+      const node = Object.values(ww.entities).find((e) => e.kind === 'resource' && e.type === type);
+      if (!node) throw new Error(`no hay ${type} en el escenario`);
+      // Diagnóstico de la cámara inicial: ¿el recurso queda tapado por la interfaz?
+      await T(page, 'centerOnTile', 26, 22);
+      await sleep(120);
+      const home = await T(page, 'tileToScreen', node.x, node.y);
+      const hidden = await page.evaluate(([x, y]) => {
+        const el = document.elementFromPoint(x, y);
+        return !el ? 'fuera de pantalla' : el.tagName === 'CANVAS' ? null : (el.closest('section,nav,header,div[class]')?.className || el.tagName);
+      }, [home.x, home.y - 8]);
+      r.occlusion = { ...(r.occlusion ?? {}), [type]: hidden ?? 'visible' };
+      // Seleccionar el aldeano y tocar el recurso.
+      let pv = await screenOfTile(page, ww.entities[v.id].x, ww.entities[v.id].y, 16);
+      await page.touchscreen.tap(pv.x, pv.y);
+      await waitFor(async () => (await T(page, 'selection')).includes(v.id), 3000, `selección para ${type}`);
+      const before = (await T(page, 'world')).players[1].stockpile[res];
+      const pr = await screenOfTile(page, node.x, node.y, 8);
+      await page.touchscreen.tap(pr.x, pr.y);
+      try {
+        await waitFor(async () => {
+          const t = (await T(page, 'world')).entities[v.id].task;
+          return t.type === 'gather' && t.targetId === node.id;
+        }, 3000, `orden de recolectar ${type}`);
+      } catch (e) {
+        const t = (await T(page, 'world')).entities[v.id].task;
+        const toast = await page.locator('.toast').allTextContents();
+        throw new Error(`${e.message} · tarea ${JSON.stringify(t)} · aviso ${JSON.stringify(toast)} · selección ${JSON.stringify(await T(page, 'selection'))}`);
+      }
+      await waitFor(async () => (await T(page, 'world')).players[1].stockpile[res] >= before + 10, 90000, `depósito de ${res}`);
+      step(`${type}: toque → recolectar → +10 ${res} depositado`);
+    }
+    await T(page, 'setTimeScale', 1);
+
     // 5. Guardar.
     await page.getByRole('button', { name: 'Partida' }).tap();
     await page.getByRole('button', { name: 'Guardar' }).tap();
@@ -314,7 +352,7 @@ async function desktopFlow() {
 const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow()];
 for (const r of results) {
   console.log(JSON.stringify(r));
-  const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} y ${r.fpsAfter2 ?? '-'} · objetos ${r.objectsStart ?? '-'}→${r.objectsEnd ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;
+  const summary = `${r.ok ? 'OK' : 'FALLO'} · errores: ${r.errors.length ? r.errors.join(' | ') : 0} · recursos en la cámara inicial: ${JSON.stringify(r.occlusion ?? {})} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} y ${r.fpsAfter2 ?? '-'} · objetos ${r.objectsStart ?? '-'}→${r.objectsEnd ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')}`;
   console.log(`::${r.ok ? 'notice' : 'error'} title=Navegador ${r.flow}::${summary.replace(/\n/g, ' ').slice(0, 3000)}`);
 }
 if (!results.every((r) => r.ok)) process.exit(1);
