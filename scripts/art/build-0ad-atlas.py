@@ -18,6 +18,13 @@ SCALE = 0.5
 DIRS = list(range(0, 360, 45))
 
 
+def clean(im: Image.Image) -> Image.Image:
+    """Quita el ruido casi invisible del suelo que recoge sombras (alfa < 12): si no, el recorte no reduce nada."""
+    r, g, b, a = im.split()
+    a = a.point(lambda v: 0 if v < 12 else v)
+    return Image.merge('RGBA', (r, g, b, a))
+
+
 def main(src: Path, out: Path) -> None:
     meta = json.loads((src / 'meta.json').read_text())
     items = []  # (clave, imagen, pivote x/y en píxeles de la imagen final)
@@ -28,7 +35,7 @@ def main(src: Path, out: Path) -> None:
                      for a, n in m['anims'].items() for d in DIRS for i in range(n)]
         else:
             paths = [(f'mil/{key}', src / key / 'idle.png')]
-        ims = [(k, Image.open(p).convert('RGBA')) for k, p in paths]
+        ims = [(k, clean(Image.open(p).convert('RGBA'))) for k, p in paths]
         # ¿Algún fotograma toca el borde superior del render? Entonces la figura está cortada.
         touches_top[key] = any(im.split()[3].crop((0, 0, im.width, 1)).getbbox() is not None for _, im in ims)
         w, h = ims[0][1].size

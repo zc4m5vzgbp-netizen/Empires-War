@@ -16,7 +16,12 @@
         "attack": 8,
         "death": 8
       },
-      "scale": 1.0
+      "scale": 1.0,
+      "size": [
+        128,
+        160
+      ],
+      "shift_y": 0.2
     },
     {
       "key": "archer",
@@ -33,7 +38,12 @@
         "attack": 8,
         "death": 8
       },
-      "scale": 1.0
+      "scale": 1.0,
+      "size": [
+        128,
+        160
+      ],
+      "shift_y": 0.2
     }
   ],
   "buildings": [
