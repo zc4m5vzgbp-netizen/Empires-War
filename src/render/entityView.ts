@@ -19,6 +19,7 @@ import { TILE_H, tileToWorld } from './iso.ts';
 import { ART, ART_BUILDINGS, TREES, type Dir, dirFromTileDelta, pivot } from './art.ts';
 import { ECO, villagerAnimKey, villagerFrame } from './villagerArt.ts';
 import { villagerVisualAction, VILLAGER_ECO_ORIGIN } from './villagerVisualState.ts';
+import { CAMP, CAMP_FRAMES, CAMP_DRAWN_TILES } from './campArt.ts';
 
 // Dibuja las entidades a partir del estado. Solo lee la simulación; nunca la modifica.
 
@@ -115,6 +116,16 @@ export class EntityView {
       };
     }
     const size = BUILDINGS[e.type].size;
+    if (this.scene.textures.exists(CAMP) && e.type in CAMP_FRAMES) {
+      const frame = CAMP_FRAMES[e.type as keyof typeof CAMP_FRAMES];
+      const o = pivot(this.scene, frame);
+      return {
+        kind: e.kind,
+        main: add.image(0, 0, CAMP, frame).setOrigin(o.x, o.y).setScale(size / CAMP_DRAWN_TILES),
+        foundation: add.image(0, 0, foundationKey(size)),
+        ring: add.image(0, 0, outlineKey(size)).setVisible(false),
+      };
+    }
     if (this.art && e.type in ART_BUILDINGS) {
       const a = ART_BUILDINGS[e.type]!;
       const o = pivot(this.scene, a.frame);
