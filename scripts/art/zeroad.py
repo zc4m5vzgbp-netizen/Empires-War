@@ -201,6 +201,10 @@ def render(repo: str, cfg: dict, out: str) -> None:
         bpy.ops.wm.collada_import(filepath=res.path(rel), fix_orientation=False, find_chains=False,
                                   auto_connect=False, keep_bind_info=True)
         new = [o for o in bpy.data.objects if o not in before]
+        # Algunos ficheros traen luces o cámaras de la escena de origen: se eliminan (proyectaban sombras extra).
+        for o in [o for o in new if o.type in ('LIGHT', 'CAMERA')]:
+            new.remove(o)
+            bpy.data.objects.remove(o, do_unlink=True)
         # 0 A.D. ignora la etiqueta <unit> (usa los números tal cual), pero Blender escala por ella: se deshace.
         meter = 1.0
         try:
@@ -336,10 +340,6 @@ def render(repo: str, cfg: dict, out: str) -> None:
             loop = key not in ('death',)
             frames = [start + (end - start) * i / (n if loop else max(1, n - 1)) for i in range(n)]
             meta[u['key']]['anims'][key] = n
-            sc.frame_set(int(start))
-            if key == 'idle':
-                for o in bpy.data.objects:
-                    print('OBJ_GRANDE', u['key'], 'escena', o.name, o.type, [round(x, 1) for x in o.dimensions], o.hide_render, flush=True)
             print('RENDER', u['key'], key, f, f'{start}-{end}', flush=True)
             for d in range(8):
                 ang = d * 45

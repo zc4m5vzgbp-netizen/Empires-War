@@ -12,9 +12,9 @@
       },
       "frames": {
         "idle": 1,
-        "walk": 1,
-        "attack": 1,
-        "death": 1
+        "walk": 8,
+        "attack": 8,
+        "death": 8
       }
     },
     {
@@ -28,9 +28,9 @@
       },
       "frames": {
         "idle": 1,
-        "walk": 1,
-        "attack": 1,
-        "death": 1
+        "walk": 8,
+        "attack": 8,
+        "death": 8
       }
     }
   ],
