@@ -16,10 +16,11 @@ Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/sk
 3. Reproducir fallos con prueba que falle ANTES de corregir (cuando sea viable).
 4. Ejecutar pruebas unitarias, typecheck y build; pruebas de navegador en cambios de interfaz/tacto.
 5. Indicar comandos ejecutados, resultados REALES, fallos pendientes y limitaciones. Nunca afirmar que pasó una prueba no ejecutada.
-6. Mantener un registro de requisitos y regresiones en `docs/QUALITY_MATRIX.md`.
+6. Mantener el estado funcional y las regresiones en `docs/REQUIREMENTS_MATRIX.md` (fuente existente del proyecto). `docs/QUALITY_MATRIX.md` es una matriz auxiliar de auditoría de Skills y no debe reemplazar ni contradecir la matriz principal.
 7. Un PR por objetivo, con alcance, evidencia y riesgos. No mezclar trabajo de Claude y ChatGPT sin revisar diferencias.
 
 ## Referencias
 - `.agents/skills/empires-war-development/SKILL.md` — procedimiento específico.
-- `docs/QUALITY_MATRIX.md` — estado de comprobaciones.
+- `docs/REQUIREMENTS_MATRIX.md` — fuente de verdad de requisitos y evidencia.
+- `docs/QUALITY_MATRIX.md` — auditoría auxiliar de calidad de agentes, si está presente.
 - Inspiración de procesos: obra/superpowers, addyosmani/agent-skills, anthropics/skills. No se ejecutan scripts externos ni se importan licencias automáticamente.
