@@ -5,7 +5,7 @@ Licencia: **Creative Commons Attribution-ShareAlike 3.0 (CC-BY-SA 3.0)**, https:
 (texto original en `LICENSE-0AD.txt`, copiado de `binaries/data/mods/public/art/LICENSE.txt` del repositorio de 0 A.D.).
 Origen: https://github.com/0ad/0ad (commit exacto en `atlas.json`, campo `meta.source`).
 
-Cambios: actor ensamblado y renderizado a imágenes 2D (Blender, ortográfica 2:1, 8 direcciones), reducido y empaquetado
+Cambios: actor ensamblado y renderizado a imágenes 2D (Blender, ortográfica 2:1, 8 direcciones), reducido y empaquetado; la sombra se desvanece donde la corta el encuadre
 (`scripts/art/zeroad.py`, `scripts/art/build-0ad-atlas.py`, configuración `scripts/art/zeroad-villager.json`).
 El color de jugador va incluido en azul. Las imágenes derivadas se distribuyen bajo CC-BY-SA 3.0.
 

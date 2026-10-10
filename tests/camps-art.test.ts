@@ -43,3 +43,9 @@ test('licencia y créditos', () => {
   assert.match(c, /storehouse/);
   assert.ok(existsSync(`${ROOT}LICENSE-0AD.txt`));
 });
+
+test('regresión (auditoría 2026-10-10): ni la figura ni la sombra de los campamentos tocan el encuadre', () => {
+  const cuts = (JSON.parse(readFileSync(`${ROOT}atlas.json`, 'utf8')).meta as { edgeCuts?: Record<string, { opaque: number; shadow: number }> }).edgeCuts;
+  assert.ok(cuts, 'el atlas no trae la medida edgeCuts');
+  for (const k of ['lumberCamp', 'miningCamp']) assert.deepEqual([cuts[k]!.opaque, cuts[k]!.shadow], [0, 0], k);
+});
