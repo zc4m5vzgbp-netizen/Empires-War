@@ -249,7 +249,20 @@ async function mobileFlow(browserType, name) {
       await page.getByRole('button', { name: 'Quitar selección' }).tap().catch(() => {});
       const roof = await screenOfTile(page, camp.x + 0.5, camp.y + 0.5, 40);
       await page.touchscreen.tap(roof.x, roof.y);
-      await waitFor(async () => (await T(page, 'selection')).includes(camp.id), 3000, 'selección del campamento con un toque');
+      try {
+        await waitFor(async () => (await T(page, 'selection')).includes(camp.id), 3000, 'selección del campamento con un toque');
+      } catch (e) {
+        // Diagnóstico: qué se seleccionó en su lugar y dónde están los aldeanos respecto al punto tocado.
+        const sel = await T(page, 'selection');
+        const wd = await T(page, 'world');
+        const near = [];
+        for (const u of Object.values(wd.entities)) {
+          if (u.kind !== 'villager') continue;
+          const sp = await T(page, 'tileToScreen', u.x, u.y);
+          near.push({ id: u.id, dx: Math.round(sp.x - roof.x), dy: Math.round(sp.y - 19 - roof.y), task: u.task.type });
+        }
+        throw new Error(`${e.message} · seleccionado ${JSON.stringify(sel)} · campamento #${camp.id} en ${camp.x},${camp.y} · aldeanos (px desde el toque) ${JSON.stringify(near)}`);
+      }
       await page.getByText('Campamento maderero').first().waitFor({ timeout: 3000 });
       step('toque sobre el tejado selecciona el campamento');
       await page.screenshot({ path: `smoke-campamento-${name}.png` });
