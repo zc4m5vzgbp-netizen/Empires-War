@@ -21,6 +21,7 @@ DIRS = list(range(0, 360, 45))
 def main(src: Path, out: Path) -> None:
     meta = json.loads((src / 'meta.json').read_text())
     items = []  # (clave, imagen, pivote x/y en píxeles de la imagen final)
+    touches_top = {}
     for key, m in meta.items():
         if 'anims' in m:
             paths = [(f'mil/{key}/{a}/{d}/{i}', src / key / a / str(d) / f'{i}.png')
@@ -28,6 +29,8 @@ def main(src: Path, out: Path) -> None:
         else:
             paths = [(f'mil/{key}', src / key / 'idle.png')]
         ims = [(k, Image.open(p).convert('RGBA')) for k, p in paths]
+        # ¿Algún fotograma toca el borde superior del render? Entonces la figura está cortada.
+        touches_top[key] = any(im.split()[3].crop((0, 0, im.width, 1)).getbbox() is not None for _, im in ims)
         w, h = ims[0][1].size
         box = None
         for _, im in ims:
@@ -84,7 +87,7 @@ def main(src: Path, out: Path) -> None:
         len({by_key[f'mil/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')

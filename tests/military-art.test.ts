@@ -67,3 +67,10 @@ test('regresión: todas las animaciones de una unidad tienen el mismo tamaño de
     assert.ok(ratio < 1.35, `${unit}: alturas ${JSON.stringify(anims)}`);
   }
 });
+
+test('regresión: la figura cabe entera en su fotograma (no se corta la cabeza)', () => {
+  // Con la escala equivocada, la unidad se salía del render por arriba.
+  const sizes = (atlas.meta as unknown as { touchesTop?: Record<string, boolean> }).touchesTop;
+  assert.ok(sizes, 'falta touchesTop en el atlas');
+  for (const [k, v] of Object.entries(sizes)) assert.equal(v, false, `${k} toca el borde superior del render`);
+});
