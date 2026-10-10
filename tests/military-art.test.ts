@@ -56,3 +56,14 @@ test('licencia y créditos del arte de 0 A.D.', () => {
   assert.match(credits, /creativecommons\.org\/licenses\/by-sa\/3\.0/);
   assert.ok(existsSync(`${ROOT}LICENSE-0AD.txt`), 'falta el texto de la licencia');
 });
+
+test('regresión: todas las animaciones de una unidad tienen el mismo tamaño de figura', () => {
+  // Algunas animaciones de 0 A.D. escalaban el esqueleto y la unidad salía al doble y cortada (andar y quieto).
+  const sizes = (atlas.meta as unknown as { figureHeights?: Record<string, Record<string, number>> }).figureHeights;
+  assert.ok(sizes, 'faltan las alturas de figura en el atlas');
+  for (const [unit, anims] of Object.entries(sizes)) {
+    const hs = Object.values(anims);
+    const ratio = Math.max(...hs) / Math.min(...hs);
+    assert.ok(ratio < 1.35, `${unit}: alturas ${JSON.stringify(anims)}`);
+  }
+});

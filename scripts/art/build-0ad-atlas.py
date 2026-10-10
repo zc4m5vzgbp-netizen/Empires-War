@@ -70,11 +70,21 @@ def main(src: Path, out: Path) -> None:
     units = {k: m['anims'] for k, m in meta.items() if 'anims' in m}
     # Comprobación de regresión: los fotogramas de andar deben ser distintos entre sí.
     by_key = {k: im for k, im, _ in items}
+    # Tamaño de la figura (dirección 270, primer fotograma) por animación: deben parecerse.
+    figure_heights = {}
+    for u, n in units.items():
+        figure_heights[u] = {}
+        for a in n:
+            if a == 'death':
+                continue  # tumbado: otra altura por naturaleza
+            # Tamaño lineal = raíz del número de píxeles casi opacos (la sombra es semitransparente y no cuenta).
+            alpha = by_key[f'mil/{u}/{a}/270/0'].split()[3]
+            figure_heights[u][a] = round(sum(alpha.histogram()[201:]) ** 0.5, 1)
     walk_distinct = all(
         len({by_key[f'mil/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')

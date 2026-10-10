@@ -333,6 +333,10 @@ def render(repo: str, cfg: dict, out: str) -> None:
                 print('animación vacía', f)
                 continue
             action = src.animation_data.action
+            # Solo se conservan las curvas de los huesos: las del objeto (posición, giro y escala del esqueleto,
+            # a veces en otras unidades) cambiaban el tamaño de la unidad en algunas animaciones.
+            for fc in [fc for fc in action.fcurves if not fc.data_path.startswith('pose.bones')]:
+                action.fcurves.remove(fc)
             for o in anim_objs:
                 bpy.data.objects.remove(o, do_unlink=True)
             arm.animation_data_create()
