@@ -296,7 +296,12 @@ def render(repo: str, cfg: dict, out: str) -> None:
             host = next((o for o in parent_objs if o.parent is None), None)
             for r in roots:
                 if host is not None and r is not host:
+                    # Se conserva la posición real: sin esto el accesorio heredaba la escala de unidades del edificio
+                    # y quedaba desplazado (tejado del silo celta flotando).
+                    bpy.context.view_layer.update()
+                    mw = r.matrix_world.copy()
                     r.parent = host
+                    r.matrix_world = mw
         for p in actor['props']:
             objs += build(p['data'], objs, p['point'], depth + 1)
         return objs

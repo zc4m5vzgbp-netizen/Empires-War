@@ -5,21 +5,42 @@
       "key": "lumberCamp",
       "actor": "structures/celts/storehouse.xml",
       "tiles": 2,
-      "size": [256, 256],
+      "size": [
+        256,
+        256
+      ],
       "shift_y": 0.12,
       "extra_props": [
-        { "actor": "props/special/eyecandy/wood_pile_1_a.xml", "x": 7, "y": -3, "rot": 30 },
-        { "actor": "props/special/eyecandy/wood_pile_1_b.xml", "x": 3, "y": -8, "rot": -20 }
+        {
+          "actor": "props/special/eyecandy/wood_pile_1_a.xml",
+          "x": 7,
+          "y": -3,
+          "rot": 30
+        },
+        {
+          "actor": "props/special/eyecandy/wood_pile_1_b.xml",
+          "x": 3,
+          "y": -8,
+          "rot": -20
+        }
       ]
     },
     {
       "key": "miningCamp",
       "actor": "structures/gauls/storehouse.xml",
       "tiles": 2,
-      "size": [256, 256],
+      "size": [
+        256,
+        256
+      ],
       "shift_y": 0.12,
       "extra_props": [
-        { "actor": "props/special/eyecandy/stone_pile.xml", "x": 7, "y": -3, "rot": 0 }
+        {
+          "actor": "props/special/eyecandy/stone_pile.xml",
+          "x": 10,
+          "y": -6,
+          "rot": 0
+        }
       ]
     }
   ]
