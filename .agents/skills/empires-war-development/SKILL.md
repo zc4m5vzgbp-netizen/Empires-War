@@ -37,7 +37,16 @@ Para cambios visuales o táctiles, iniciar servidor de vista previa con la ruta 
 ## 5. Revisión de PR
 Comprobar: base correcta, cambios fuera de alcance, determinismo, seguridad de guardado, licencias/créditos, accesibilidad táctil, rendimiento móvil, pruebas y compatibilidad de ramas. Si una prueba falla, no declarar «listo». Nunca fusionar automáticamente.
 
-## 6. Entrega compacta
+## 6. Mecánicas de producción, combate e IA (consolidado)
+Activar este apartado al cambiar producción, colas, costes, tiempos, daño, armadura, objetivos, selección múltiple, movimiento de grupos, población o IA.
+- Separar reglas confirmadas de valores provisionales de balance; no inventar estadísticas AoE II DE.
+- Probar producción y coste, órdenes de ataque, elección de objetivos, daño, muerte, obstáculos, aliados/enemigos y límites de población.
+- Usar ticks deterministas para reproducir combates y comprobar que la IA no recibe trucos del jugador.
+- Mantener simulación independiente de animaciones; validar con pruebas unitarias y smoke táctil cuando corresponda.
+- Ejercicio de aceptación cuando exista la mecánica: espadachín y arquero producidos desde edificio aprobado, reciben órdenes y resuelven combate determinista; no marcar implementado antes de existir.
+- Reportar entradas/salidas, pruebas ejecutadas, diferencias de balance y pendientes.
+
+## 7. Entrega compacta
 Responder: **hecho**, **pruebas ejecutadas y resultados**, **pendiente/riesgos**, **PR**. Si una prueba no pudo ejecutarse, decirlo explícitamente. Actualizar `docs/REQUIREMENTS_MATRIX.md` solo con evidencia real.
 
 ## Fuentes de prácticas (referencias, no dependencias)
