@@ -58,6 +58,17 @@ export function createWorld(options: { seed: number; size: number }): WorldState
   for (const b of s.berryBushes) {
     addEntity(world, { kind: 'resource', type: 'berryBush', resource: 'food', x: b.x, y: b.y, amount: BERRY_BUSH.food });
   }
+  // Fuentes iniciales de los cuatro recursos: primera etapa del ciclo económico.
+  // Son provisionales y se sustituirán por distribución generada en el mapa definitivo.
+  for (const [type, resource, amount, positions] of [
+    ['tree', 'wood', 150, [[17, 17], [18, 17], [17, 18], [18, 18]]],
+    ['goldMine', 'gold', 500, [[35, 25], [36, 25]]],
+    ['stoneMine', 'stone', 500, [[34, 31], [35, 31]]],
+  ] as const) {
+    for (const [x, y] of positions) {
+      addEntity(world, { kind: 'resource', type, resource, x, y, amount });
+    }
+  }
   return world;
 }
 
