@@ -14,6 +14,7 @@ import { mapBounds, tileToWorld } from './render/iso.ts';
 import { findPlacementNear } from './simulation/placement.ts';
 import { createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
 import { App } from './ui/App.tsx';
+import { countMilitaryAnimations } from './render/militaryArt.ts';
 import { createHudStore } from './ui/store.ts';
 import './ui/styles.css';
 
@@ -250,5 +251,7 @@ if (new URLSearchParams(location.search).has('test')) {
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
+    textures: () => scene?.textures.getTextureKeys() ?? [],
+    militaryAnimCount: () => (scene ? countMilitaryAnimations(scene) : 0),
   };
 }
