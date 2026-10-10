@@ -131,10 +131,11 @@ export class EntityView {
         const p0 = prev.get(e.id) ?? e;
         const pos = tileToWorld(lerp(p0.x, e.x, alpha), lerp(p0.y, e.y, alpha));
         view.main.setPosition(pos.x, pos.y).setDepth(pos.y);
-        if (this.art) animateVillager(view, e.x - p0.x, e.y - p0.y, e.carryAmount > 0);
+        if (this.art) animateVillager(view, e.x - p0.x, e.y - p0.y, e.carryAmount > 0 && e.carryType === 'food');
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 0.5).setVisible(isSelected);
         view.carry
-          ?.setPosition(pos.x + 9, pos.y - 20)
+          ?.setTint(e.carryType === 'wood' ? 0x8b5a2b : e.carryType === 'gold' ? 0xf2c94c : e.carryType === 'stone' ? 0x9aa5ad : 0xffffff)
+          .setPosition(pos.x + 9, pos.y - 20)
           .setDepth(pos.y + 0.5)
           .setVisible(e.carryAmount > 0);
       } else if (e.kind === 'resource') {
