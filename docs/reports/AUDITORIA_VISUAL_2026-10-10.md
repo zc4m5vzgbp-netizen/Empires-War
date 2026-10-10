@@ -29,7 +29,7 @@ Ninguno. No se ha encontrado ningún fallo que rompa el juego, corrompa partidas
 | I-5 | Con un aldeano seleccionado, el panel ocupa unos 440 de 932 px (≈47 %) en iPhone 15 Pro Max: cuatro botones apilados. | [PROBADO] Captura 15 (WebKit, perfil iPhone) | ChatGPT (UI) | Pendiente. Sugerencia: botón «Construir ▸» con submenú, o rejilla de 2 columnas con textos cortos. |
 | I-6 | El paso del smoke «la partida normal no descarga el arte militar» filtra `/assets/0ad`. Esa cadena también coincide con `0ad-villager` y `0ad-camps`, así que fallará en cuanto la partida cargue la aldeana. | [PROBADO] En la rama de auditoría hubo que cambiar el filtro a `/assets/0ad/`. | Integración | Corregido solo en la rama de auditoría |
 | I-7 | Las animaciones de muerte del arte militar (#11) cortan el cuerpo tumbado en 49 renders; además hay 176 sombras cortadas. | [PROBADO] Medición sobre la rama `renders-0ad` | Claude | Pendiente (fuera del alcance actual). Necesita volver a renderizar con un encuadre más ancho. |
-| I-8 | El FPS del smoke en CI no sirve como compuerta de regresión: el mismo código dio un FPS final de 14 en una ejecución y de 34 en otra (Chromium). | [MEDIDO-CI] Ejecuciones 38074073893 y 38075009836 | Proceso | Usar la mediana de 3 ejecuciones (`scripts/perf-audit.mjs`) |
+| I-8 | El FPS del smoke en CI no sirve como compuerta de regresión: el mismo código dio un FPS final de 14 en una ejecución y de 34 en otra (Chromium). | [MEDIDO-CI] Ejecuciones 38074073893 y 38075009836. También dio 14 en el CI del PR #20 (2be965c), donde la partida normal ni siquiera carga los atlas nuevos | Proceso | Usar la mediana de 3 ejecuciones (`scripts/perf-audit.mjs`) |
 
 ## Errores menores
 
