@@ -1,4 +1,4 @@
-# Campamentos maderero y minero (rama `feat/economy-camps-art`, PR #16)
+# Campamentos maderero y minero (rama `feat/economy-camps-art`, PR #18)
 
 Solo es arte. Las reglas de depósito, los costes y la construcción son de la simulación (ChatGPT). No se ha tocado `main` ni la rama candidata.
 
