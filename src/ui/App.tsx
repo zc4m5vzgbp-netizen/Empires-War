@@ -83,8 +83,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
             {panelCollapsed ? `▲ ${sel.kind === "none" ? "Órdenes" : sel.title}` : "▼ Ocultar panel"}
           </button>
         )}
-        {(!panelCollapsed || !!place) && (
-        {place ? (
+        {(!panelCollapsed || !!place) && (place ? (
           <div class="placing">
             <p class="panel-title">Construir {place.name}</p>
             <p class="panel-line">
@@ -128,8 +127,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
               <button type="button" onClick={actions.deselect} aria-label="Quitar selección">Quitar selección</button>
             </div>
           </div>
-        )}
-        )}
+        ))}
       </section>
 
       <nav class="controls" aria-label="Cámara y partida">
