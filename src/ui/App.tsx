@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { BUILDINGS, RESOURCE_LABELS, RESOURCE_TYPES } from '../content/economy.ts';
+import { BUILDINGS, RESOURCE_LABELS, RESOURCE_TYPES, type BuildingType } from '../content/economy.ts';
 import type { HudStore } from './store.ts';
 
 export interface AppActions {
@@ -7,6 +7,7 @@ export interface AppActions {
   zoomOut(): void;
   recenter(): void;
   startBuildMill(): void;
+  startBuild(building: BuildingType): void;
   confirmPlacement(): void;
   cancelPlacement(): void;
   deselect(): void;
@@ -16,7 +17,7 @@ export interface AppActions {
   load(): void;
 }
 
-const millCost = Object.entries(BUILDINGS.mill.cost)
+const buildingCost = (building: BuildingType) => Object.entries(BUILDINGS[building].cost)
   .map(([r, n]) => `${n} ${RESOURCE_LABELS[r as keyof typeof RESOURCE_LABELS].toLowerCase()}`)
   .join(', ');
 
@@ -121,9 +122,14 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
             <div class="panel-actions">
               {sel.canOrderBuild && (
                 <button type="button" class="primary" disabled={!s.canAffordMill} onClick={actions.startBuildMill}>
-                  Construir Molino · {millCost}
+                  Construir Molino · {buildingCost('mill')}
                 </button>
               )}
+              {sel.canOrderBuild && (['lumberCamp', 'miningCamp'] as const).map((type) => (
+                <button type="button" key={type} onClick={() => actions.startBuild(type)}>
+                  Construir {BUILDINGS[type].name} · {buildingCost(type)}
+                </button>
+              ))}
               <button type="button" onClick={actions.deselect} aria-label="Quitar selección">Quitar selección</button>
             </div>
           </div>
