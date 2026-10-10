@@ -1,0 +1,35 @@
+{
+  "samples": 24,
+  "prefix": "eco",
+  "units": [
+    {
+      "key": "villager",
+      "actor": "units/celts/female_citizen.xml",
+      "scale": 1.0,
+      "size": [128, 176],
+      "shift_y": 0.22,
+      "anims": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "chop": { "variant": "biped/female_gather_tree.xml", "anim": "gather_tree" },
+        "mine": { "variant": "biped/female_gather_rock.xml", "anim": "gather_rock" },
+        "forage": { "variant": "biped/female_gather_fruit.xml", "anim": "gather_fruit" },
+        "farm": { "variant": "biped/female_gather_grain.xml", "anim": "gather_grain" },
+        "build": { "variant": "biped/female_build.xml", "anim": "Build" },
+        "carry/wood": { "variant": "biped/female_carry_wood.xml", "anim": "Walk" },
+        "carry/stone": { "variant": "biped/female_carry_stone.xml", "anim": "Walk" },
+        "carry/gold": { "variant": "biped/female_carry_metal.xml", "anim": "Walk" },
+        "carry/food": { "variant": "biped/female_carry_food.xml", "anim": "Walk" },
+        "carry/wood-idle": { "variant": "biped/female_carry_wood.xml", "anim": "Idle" },
+        "carry/stone-idle": { "variant": "biped/female_carry_stone.xml", "anim": "Idle" },
+        "carry/gold-idle": { "variant": "biped/female_carry_metal.xml", "anim": "Idle" },
+        "carry/food-idle": { "variant": "biped/female_carry_food.xml", "anim": "Idle" }
+      },
+      "frames": {
+        "idle": 1, "walk": 8, "chop": 8, "mine": 8, "forage": 8, "farm": 8, "build": 8,
+        "carry/wood": 8, "carry/stone": 8, "carry/gold": 8, "carry/food": 8,
+        "carry/wood-idle": 1, "carry/stone-idle": 1, "carry/gold-idle": 1, "carry/food-idle": 1
+      }
+    }
+  ]
+}

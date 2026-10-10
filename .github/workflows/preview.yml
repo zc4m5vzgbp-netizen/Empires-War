@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   # Se actualiza sola con cada cambio en la rama visual.
   push:
-    branches: [feat/visual-upgrade, feat/map-resources-art]
+    branches: [feat/visual-upgrade, feat/map-resources-art, feat/military-art]
 
 permissions:
   contents: write
@@ -29,7 +29,10 @@ jobs:
           npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           npm run smoke:browser
-      - run: npx vite build --base ./ --outDir vista-previa
+      - name: Compilar la vista previa (con la galería activada en la rama militar)
+        run: |
+          if [ "$GITHUB_REF_NAME" = "feat/military-art" ]; then export VITE_GALERIA=1; fi
+          npx vite build --base ./ --outDir vista-previa
       - name: Publicar en la rama «vista-previa»
         run: |
           cd vista-previa
