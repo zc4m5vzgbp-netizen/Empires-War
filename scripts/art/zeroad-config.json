@@ -1,0 +1,20 @@
+{
+  "samples": 24,
+  "units": [
+    {
+      "key": "swordsman",
+      "actor": "units/britons/infantry_swordsman_c.xml",
+      "anims": { "idle": "Idle", "walk": "Walk", "attack": "attack_melee", "death": "Death" },
+      "frames": { "idle": 1, "walk": 8, "attack": 8, "death": 8 }
+    },
+    {
+      "key": "archer",
+      "actor": "units/athenians/infantry_archer_b.xml",
+      "anims": { "idle": "Idle", "walk": "Walk", "attack": "attack_ranged", "death": "Death" },
+      "frames": { "idle": 1, "walk": 8, "attack": 8, "death": 8 }
+    }
+  ],
+  "buildings": [
+    { "key": "barracks", "actor": "structures/britons/barracks.xml", "tiles": 3, "size": [384, 384] }
+  ]
+}
