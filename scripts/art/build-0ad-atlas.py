@@ -58,7 +58,8 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
             c = c.resize((max(1, round(c.width * SCALE)), max(1, round(c.height * SCALE))), Image.LANCZOS)
             items.append((k, c, ((px - box[0]) * SCALE, (py - box[1]) * SCALE)))
 
-    W = 2048
+    # Ancho del atlas: 2048, o menos si hay pocas imágenes (potencia de 2 que quepa en una fila).
+    W = min(2048, 1 << (sum(im.width + 1 for _, im, _ in items) - 1).bit_length())
     items.sort(key=lambda t: (-t[1].height, t[0]))
     x = y = shelf = 0
     placed = []

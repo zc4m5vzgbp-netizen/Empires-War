@@ -186,6 +186,16 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | MIL-06 | Animación de recibir daño | pendiente | 0 A.D. no la tiene; se propone un destello |
 | MIL-07 | Milicia, lancero, caballería, arquería y establo | pendiente | Basta con añadir sus actores a la configuración |
 
+## Arte económico (ECO-ART) — ramas `feat/villager-task-art` (PR #13) y `feat/economy-camps-art`
+
+| ID | Función | Estado | Prueba / evidencia |
+|---|---|---|---|
+| ECO-ART-01 | Aldeana con idle, walk, chop, mine, forage, farm, build y carry/<recurso> en 8 direcciones | probado (sin iPhone) | `tests/villager-art.test.ts`; galería en la prueba de navegador (120 animaciones) |
+| ECO-ART-02 | Campamento maderero 2×2 | probado (sin iPhone) | `tests/camps-art.test.ts`; captura de la galería |
+| ECO-ART-03 | Campamento minero 2×2 | probado (sin iPhone) | Ídem |
+| ECO-ART-04 | Casa, granja (3 estados) e indicadores de producción | pendiente | Siguientes lotes |
+| ECO-ART-05 | Colores de jugador y oro diferenciado | pendiente | — |
+
 ## Funciones reservadas para el futuro (NO implementar ahora, §12)
 
 | ID | Función | Estado |

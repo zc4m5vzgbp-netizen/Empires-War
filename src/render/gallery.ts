@@ -3,6 +3,7 @@ import { ART, pivot } from './art.ts';
 import { tileToWorld } from './iso.ts';
 import { MIL, type MilUnit, milAnimKey, milFrame } from './militaryArt.ts';
 import { ECO, type VillagerAnim, villagerAnimKey, villagerFrame } from './villagerArt.ts';
+import { CAMP, CAMP_FRAMES } from './campArt.ts';
 
 // Galería de estilo (solo con ?galeria=1): muestra arte del atlas que la partida aún no usa
 // (soldados, piedra, torre, iglesia…) para evaluar la dirección artística. Es decoración:
@@ -23,6 +24,7 @@ export function addGallery(scene: Phaser.Scene): void {
     scene.add.image(p.x, p.y, ART, it.frame).setOrigin(o.x, o.y).setScale(it.scale ?? 1).setDepth(p.y);
   }
   if (scene.textures.exists(ECO)) addVillagerTasks(scene);
+  if (scene.textures.exists(CAMP)) addCamps(scene);
   if (scene.textures.exists(MIL)) {
     addMilitary(scene);
     return;
@@ -88,4 +90,16 @@ function addVillagerTasks(scene: Phaser.Scene): void {
     const o = pivot(scene, frame, ECO);
     scene.add.sprite(p.x, p.y, ECO, frame).setOrigin(o.x, o.y).setDepth(p.y).play(villagerAnimKey(anim, 270));
   });
+}
+
+/** Campamentos maderero y minero (huella 2×2; el ancla es el centro de la huella). */
+function addCamps(scene: Phaser.Scene): void {
+  const place = (frame: string, x: number, y: number) => {
+    // Centro de una huella 2×2 con esquina en (x, y).
+    const p = tileToWorld(x + 0.5, y + 0.5);
+    const o = pivot(scene, frame, CAMP);
+    scene.add.image(p.x, p.y, CAMP, frame).setOrigin(o.x, o.y).setDepth(p.y + 32);
+  };
+  place(CAMP_FRAMES.lumberCamp, 6, 18);
+  place(CAMP_FRAMES.miningCamp, 10, 17);
 }
