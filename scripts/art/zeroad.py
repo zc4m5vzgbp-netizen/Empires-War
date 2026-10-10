@@ -234,6 +234,21 @@ def render(repo: str, cfg: dict, out: str) -> None:
             if o.type == 'MESH':
                 o.data.materials.clear()
                 o.data.materials.append(mat)
+        if depth > 0:
+            # Accesorios con esqueleto propio (p. ej. el arco): se usan en su pose de reposo, sin su armadura,
+            # porque 0 A.D. los anima aparte y aquí su esqueleto quedaría con una escala errónea.
+            for o in objs:
+                if o.type == 'MESH':
+                    for mod in list(o.modifiers):
+                        if mod.type == 'ARMATURE':
+                            o.modifiers.remove(mod)
+            for o in [o for o in objs if o.type == 'ARMATURE']:
+                for ch in [c for c in objs if c.parent is o]:
+                    mw = ch.matrix_world.copy()
+                    ch.parent = None
+                    ch.matrix_world = mw
+                objs.remove(o)
+                bpy.data.objects.remove(o, do_unlink=True)
         roots = [o for o in objs if o.parent is None]
         if parent_objs is not None and point and point != 'root':
             target, bone = find_point(parent_objs, point)
