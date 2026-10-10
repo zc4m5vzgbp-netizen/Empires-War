@@ -78,4 +78,21 @@ async function tapTile(page, x, y, lift = 0) {
   await page.screenshot({ path: `${OUT}/10-escritorio-seleccion.png` });
   await browser.close();
 }
+// Galería de estilo (?galeria=1): arte del atlas que la partida aún no usa (soldados, piedra, edificios).
+{
+  const browser = await webkit.launch();
+  const page = await (await browser.newContext({ ...devices['iPhone 15 Pro Max'] })).newPage();
+  await page.goto(URL + '&galeria=1', { waitUntil: 'load' });
+  await page.waitForFunction(() => Boolean(window.__EW_TEST__), null, { timeout: 20000 });
+  await page.evaluate(() => window.__EW_TEST__.centerOnTile(19, 29));
+  await sleep(1500);
+  await page.screenshot({ path: `${OUT}/11-iphone-galeria.png` });
+  const desk = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+  await desk.goto(URL + '&galeria=1', { waitUntil: 'load' });
+  await desk.waitForFunction(() => Boolean(window.__EW_TEST__), null, { timeout: 20000 });
+  await desk.evaluate(() => window.__EW_TEST__.centerOnTile(21, 27));
+  await sleep(1500);
+  await desk.screenshot({ path: `${OUT}/12-escritorio-galeria.png` });
+  await browser.close();
+}
 console.log('Capturas listas');

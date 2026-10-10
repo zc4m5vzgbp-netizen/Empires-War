@@ -27,7 +27,8 @@ export const outlineKey = (size: number) => `outline-${size}`;
 
 /** Origen de cada textura de edificio: el centro de su base coincide con el centro de la huella. */
 export const BUILDING_ORIGIN: Partial<Record<BuildingType, Pt>> = {};
-export const BUILDING_WALL: Record<BuildingType, number> = { townCenter: 46, mill: 30 };
+// Altura aproximada de las paredes para aceptar toques sobre el edificio (cubre el arte del atlas, más alto).
+export const BUILDING_WALL: Record<BuildingType, number> = { townCenter: 80, mill: 56 };
 
 function polygon(g: Phaser.GameObjects.Graphics, pts: readonly Pt[], color: number, alpha = 1): void {
   const [first, ...rest] = pts;

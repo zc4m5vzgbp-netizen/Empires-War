@@ -1,0 +1,41 @@
+name: Vista previa aislada
+
+# Compila esta rama con rutas relativas y la deja en la rama «vista-previa» para publicarla aparte.
+# No toca GitHub Pages ni el juego principal.
+on:
+  workflow_dispatch:
+  # Se actualiza sola con cada cambio en la rama visual.
+  push:
+    branches: [feat/visual-upgrade, feat/map-resources-art]
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Prueba en navegador (Chromium y WebKit con perfil de iPhone, y escritorio)
+        run: |
+          npm run build
+          npx playwright install --with-deps chromium webkit
+          npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
+          npm run smoke:browser
+      - run: npx vite build --base ./ --outDir vista-previa
+      - name: Publicar en la rama «vista-previa»
+        run: |
+          cd vista-previa
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "Vista previa de ${GITHUB_REF_NAME} ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/vista-previa
