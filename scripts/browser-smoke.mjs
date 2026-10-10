@@ -67,6 +67,9 @@ async function mobileFlow(browserType, name) {
   page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
   const r = { flow: `móvil ${name}`, steps: [] };
   const step = (s) => r.steps.push(s);
+  // Carga perezosa del arte militar: la partida normal no debe descargarlo (Skill preact-web-performance, «Carga»).
+  const requested = [];
+  page.on('request', (q) => requested.push(q.url()));
   try {
     r.bootMs = await open(page);
     await sleep(1500);
@@ -244,6 +247,9 @@ async function mobileFlow(browserType, name) {
     r.objectsEnd = await T(page, 'objectCount');
 
     r.errors = errors;
+    const military = requested.filter((u) => u.includes('/assets/0ad/'));
+    if (military.length) throw new Error(`la partida normal descargó el arte militar: ${military.join(', ')}`);
+    step('la partida normal no descarga el arte militar (carga perezosa)');
     r.ok = errors.length === 0;
   } catch (e) {
     r.errors = [...errors, `prueba: ${e.message}`];
@@ -360,10 +366,13 @@ async function galleryFlow() {
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
   const r = { flow: 'galería militar webkit', steps: [] };
+  const requested = [];
+  page.on('request', (q) => requested.push(q.url()));
   try {
     await page.goto(URL + '&galeria=1', { waitUntil: 'load' });
     await waitFor(() => page.evaluate(() => Boolean(window.__EW_TEST__)), 15000, 'juego con galería');
     await waitFor(async () => (await T(page, 'textures')).includes('mil'), 15000, 'atlas militar cargado');
+    if (!requested.some((u) => u.includes('/assets/0ad/atlas.png'))) throw new Error('la galería no descargó el atlas militar');
     const n = await T(page, 'militaryAnimCount');
     if (n !== 2 * 4 * 8) throw new Error(`animaciones militares: ${n} (se esperaban 64)`);
     r.steps.push(`atlas militar cargado; ${n} animaciones (2 unidades × 4 × 8 direcciones)`);
