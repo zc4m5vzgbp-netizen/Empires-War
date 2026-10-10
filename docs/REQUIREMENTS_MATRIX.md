@@ -195,6 +195,8 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | ECO-ART-03 | Campamento minero 2×2 | probado (sin iPhone) | Ídem |
 | ECO-ART-04 | Casa, granja (3 estados) e indicadores de producción | pendiente | Siguientes lotes |
 | ECO-ART-05 | Colores de jugador y oro diferenciado | pendiente | — |
+| ECO-ART-06 | Sombra de la aldeana sin cortes rectos en el borde del fotograma (auditoría 2026-10-10) | probado | `tests/villager-art.test.ts` (falla con el atlas anterior: 209/680 fotogramas cortados) |
+| ECO-ART-07 | Aldeana y campamentos dibujados en la partida normal (no solo galería) | probado en rama de auditoría, sin integrar | `audit/claude-visual-integration`: smoke 4c en WebKit y Chromium (perfil iPhone); iPhone físico pendiente |
 
 ## Funciones reservadas para el futuro (NO implementar ahora, §12)
 
