@@ -39,9 +39,10 @@ test('transiciones de arena con hierba', () => {
   assert.equal(groundFrame(pocket, 1, 1, 3), 'tile/grass/3');
 });
 
-test('orillas: agua junto a tierra', () => {
-  const at = grid(['www', 'www', 'ggg']);
-  assert.equal(groundFrame(at, 1, 1, 0), 'bs/straight/225');
+test('orillas: entre agua y hierba siempre hay arena', () => {
+  const at = grid(['www', 'www', 'ggg', 'ggg']);
+  assert.equal(groundFrame(at, 1, 1, 0), 'bs/straight/225'); // agua con orilla abajo-izquierda
   assert.equal(groundFrame(at, 1, 0, 0), 'tile/water/0');
-  assert.equal(groundFrame(at, 1, 2, 2), 'tile/grass/2');
+  assert.equal(groundFrame(at, 1, 2, 2), 'gb/straight/225'); // hierba junto al agua → arena con hierba detrás
+  assert.equal(groundFrame(at, 1, 3, 2), 'tile/grass/2');
 });

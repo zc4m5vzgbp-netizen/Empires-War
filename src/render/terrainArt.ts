@@ -29,7 +29,21 @@ const CORNERS = [
   [315, 1, 1, 315, 225],
 ] as const;
 
-export function groundFrame(at: At, x: number, y: number, grassVariant: number): string {
+/**
+ * Terreno tal como se dibuja: la hierba que toca agua se pinta como arena de orilla (solo aspecto; ambas son
+ * transitables). Así entre hierba y agua siempre hay arena, como en el arte de UH, y no aparecen escalones oscuros.
+ */
+function visual(at: At): At {
+  return (x, y) => {
+    const k = at(x, y);
+    if (k === undefined || !isGreen(k)) return k;
+    for (const [, dx, dy] of [...SIDES, ...CORNERS]) if (at(x + dx, y + dy) === TerrainKind.Water) return TerrainKind.Dirt;
+    return k;
+  };
+}
+
+export function groundFrame(rawAt: At, x: number, y: number, grassVariant: number): string {
+  const at = visual(rawAt);
   const kind = at(x, y) ?? TerrainKind.Grass;
   const grass = `tile/grass/${grassVariant}`;
   if (kind === TerrainKind.Grass || kind === TerrainKind.Forest) return grass;

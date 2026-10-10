@@ -103,9 +103,9 @@ export class GameScene extends Phaser.Scene {
     const CHUNK = 16;
     const at = (x: number, y: number) => terrainAt(map, x, y);
     const frameFor = (_kind: number, x: number, y: number) => groundFrame(at, x, y, Math.floor(tileNoise(x, y) * GRASS_VARIANTS));
-    // Las casillas del atlas miden 64×64; el centro del rombo está entre las filas 41 y 47 según el terreno.
+    // Las casillas del atlas miden 64×64 con el rombo apoyado en (32, 40).
     const LEFT = 32;
-    const UP = 48;
+    const UP = 40;
     const DOWN = 24;
     for (let cy = 0; cy < map.height; cy += CHUNK) {
       for (let cx = 0; cx < map.width; cx += CHUNK) {

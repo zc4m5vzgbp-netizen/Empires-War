@@ -179,11 +179,9 @@ def anchor(im: Image.Image, kind) -> dict:
     w, h = im.size
     a = im.split()[3]
     if kind == 'tile':
-        # Centro del rombo = la fila más ancha. UH dibuja arena y agua unos píxeles más abajo que la hierba
-        # (niveles de altura); al anclar por la fila más ancha todas quedan al mismo nivel y no asoman bordes oscuros.
-        counts = [sum(1 for x in range(w) if a.getpixel((x, y)) > 200) for y in range(h)]
-        widest = counts.index(max(counts))
-        return {'x': 0.5, 'y': widest / h}
+        # Ancla común (32, 40). UH dibuja la arena y el agua algo más abajo que la hierba (niveles de altura) y sus
+        # casillas de transición incluyen ese escalón; por eso entre hierba y agua siempre se pone una orilla de arena.
+        return {'x': 0.5, 'y': (h - 8 - 16) / h}
     # Vértice inferior de la huella: el píxel opaco más bajo en la columna central (±2 px).
     bottom = 0
     for x in range(w // 2 - 2, w // 2 + 3):
