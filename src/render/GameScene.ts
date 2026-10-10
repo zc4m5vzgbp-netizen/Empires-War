@@ -18,7 +18,7 @@ import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimation
 import { addGallery } from './gallery.ts';
 import { groundFrame } from './terrainArt.ts';
 import { preloadVillagerArt, createVillagerAnimations } from './villagerArt.ts';
-import { preloadCampArt } from './campArt.ts';
+import { CAMP, CAMP_FRAMES, CAMP_DRAWN_TILES, preloadCampArt } from './campArt.ts';
 
 export interface GameSceneDeps {
   world: WorldState;
@@ -191,7 +191,11 @@ export class GameScene extends Phaser.Scene {
     const c = tileToWorld(origin.x + (size - 1) / 2, origin.y + (size - 1) / 2);
     const o = BUILDING_ORIGIN[placing.building] ?? { x: 0.5, y: 0.8 };
     this.ghostFootprint.setTexture(footprintKey(size, check?.valid ?? false)).setPosition(c.x, c.y).setVisible(true);
-    if (artReady(this) && placing.building in ART_BUILDINGS) {
+    if (this.textures.exists(CAMP) && placing.building in CAMP_FRAMES) {
+      const frame = CAMP_FRAMES[placing.building as keyof typeof CAMP_FRAMES];
+      const p = pivot(this, frame);
+      this.ghost.setTexture(CAMP, frame).setOrigin(p.x, p.y).setScale(size / CAMP_DRAWN_TILES);
+    } else if (artReady(this) && placing.building in ART_BUILDINGS) {
       const a = ART_BUILDINGS[placing.building]!
       const p = pivot(this, a.frame);
       this.ghost.setTexture(ART, a.frame).setOrigin(p.x, p.y).setScale(size / a.drawnSize);
