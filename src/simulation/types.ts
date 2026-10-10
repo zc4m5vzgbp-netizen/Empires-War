@@ -46,7 +46,7 @@ export interface Building {
 export interface ResourceNode {
   id: EntityId;
   kind: 'resource';
-  type: 'berryBush';
+  type: 'berryBush' | 'tree' | 'goldMine' | 'stoneMine';
   resource: ResourceType;
   x: number;
   y: number;
