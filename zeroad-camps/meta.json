@@ -1,0 +1,16 @@
+{
+ "lumberCamp": {
+  "pivot": {
+   "x": 0.5,
+   "y": 0.62
+  },
+  "tiles": 2
+ },
+ "miningCamp": {
+  "pivot": {
+   "x": 0.5,
+   "y": 0.62
+  },
+  "tiles": 2
+ }
+}
