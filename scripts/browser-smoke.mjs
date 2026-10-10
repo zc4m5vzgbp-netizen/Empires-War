@@ -311,7 +311,36 @@ async function desktopFlow() {
   return r;
 }
 
-const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow()];
+/** Galería con el arte militar de 0 A.D. (perfil de iPhone en WebKit): carga del atlas, animaciones y sin errores. */
+async function galleryFlow() {
+  const browser = await webkit.launch();
+  const page = await (await browser.newContext({ ...phone })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
+  const r = { flow: 'galería militar webkit', steps: [] };
+  try {
+    await page.goto(URL + '&galeria=1', { waitUntil: 'load' });
+    await waitFor(() => page.evaluate(() => Boolean(window.__EW_TEST__)), 15000, 'juego con galería');
+    await waitFor(async () => (await T(page, 'textures')).includes('mil'), 15000, 'atlas militar cargado');
+    const n = await T(page, 'animCount', 'mil/');
+    if (n !== 2 * 4 * 8) throw new Error(`animaciones militares: ${n} (se esperaban 64)`);
+    r.steps.push(`atlas militar cargado; ${n} animaciones (2 unidades × 4 × 8 direcciones)`);
+    await T(page, 'centerOnTile', 18, 27);
+    await sleep(1500);
+    r.fps = Number((await page.locator('.stats dd').allTextContents())[0]);
+    r.steps.push(`FPS con la galería: ${r.fps}`);
+    r.errors = errors;
+    r.ok = errors.length === 0;
+  } catch (e) {
+    r.errors = [...errors, `prueba: ${e.message}`];
+    r.ok = false;
+  }
+  await browser.close();
+  return r;
+}
+
+const results = [await mobileFlow(chromium, 'chromium'), await mobileFlow(webkit, 'webkit'), await desktopFlow(), await galleryFlow()];
 for (const r of results) {
   console.log(JSON.stringify(r));
   const summary = `${r.ok ? 'OK' : 'FALLO'} · arranque ${r.bootMs} ms · FPS inicio ${r.fps} · FPS final ${r.fpsAfter ?? '-'} y ${r.fpsAfter2 ?? '-'} · objetos ${r.objectsStart ?? '-'}→${r.objectsEnd ?? '-'} · ticks/s a x10 ${r.millBuildTicksPerSecond ?? '-'} · pasos: ${r.steps.join(' | ')} · errores: ${r.errors.length ? r.errors.join(' | ') : 0}`;

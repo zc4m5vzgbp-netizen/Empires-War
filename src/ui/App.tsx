@@ -156,7 +156,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
         </div>
       )}
 
-      <footer class="build">Versión {build} · datos provisionales · arte: Unknown Horizons (CC-BY-SA 3.0)</footer>
+      <footer class="build">Versión {build} · datos provisionales · arte: Unknown Horizons y 0 A.D. (CC-BY-SA 3.0)</footer>
 
       {s.error && (
         <div class="error" role="alert">

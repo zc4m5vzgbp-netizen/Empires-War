@@ -68,9 +68,13 @@ def main(src: Path, out: Path) -> None:
     sheet.save(out / 'atlas.png', optimize=True)
     commit = (src / 'zeroad-commit.txt').read_text().strip() if (src / 'zeroad-commit.txt').exists() else '?'
     units = {k: m['anims'] for k, m in meta.items() if 'anims' in m}
+    # Comprobación de regresión: los fotogramas de andar deben ser distintos entre sí.
+    by_key = {k: im for k, im, _ in items}
+    walk_distinct = all(
+        len({by_key[f'mil/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')
