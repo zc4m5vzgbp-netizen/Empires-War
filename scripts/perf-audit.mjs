@@ -23,14 +23,16 @@ async function run(type, env, extra) {
   await sleep(1000);
   const rest = await rafFps(page);
   // Los 5 aldeanos a recolectar (todos animados) y simulación a x10.
-  const w = await T(page, 'world');
   const tex = await T(page, 'textures');
+  await T(page, 'orderAllGather');
   await T(page, 'setTimeScale', 10);
-  await sleep(1500);
+  await sleep(3000);
   const busy = await rafFps(page);
+  const ticks0 = (await T(page, 'world')).tick; const tt = Date.now(); await sleep(3000);
+  const tps = Math.round((((await T(page, 'world')).tick - ticks0) * 1000) / (Date.now() - tt));
   await T(page, 'setTimeScale', 1);
   await browser.close();
-  return { boot, rest, busy, eco: tex.includes('eco'), camp: tex.includes('camp') };
+  return { boot, rest, busy, tps, eco: tex.includes('eco'), camp: tex.includes('camp') };
 }
 
 for (const [name, type, env] of [['chromium iPhone', chromium, { ...devices['iPhone 15 Pro Max'] }], ['webkit iPhone', webkit, { ...devices['iPhone 15 Pro Max'] }]]) {
@@ -38,7 +40,7 @@ for (const [name, type, env] of [['chromium iPhone', chromium, { ...devices['iPh
   for (const [label, extra] of [['todo', ''], ['sin aldeana eco', '&sinEco=1'], ['sin campamentos', '&sinCamp=1'], ['sin ambos', '&sinEco=1&sinCamp=1']]) {
     const rs = [];
     for (let i = 0; i < 3; i++) rs.push(await run(type, env, extra));
-    lines.push(`${label} [eco=${rs[0].eco} camp=${rs[0].camp}]: arranque med ${median(rs.map((r) => r.boot))} ms · FPS reposo med ${median(rs.map((r) => r.rest))} (peor ${Math.min(...rs.map((r) => r.rest))}) · FPS x10 med ${median(rs.map((r) => r.busy))} (peor ${Math.min(...rs.map((r) => r.busy))})`);
+    lines.push(`${label} [eco=${rs[0].eco} camp=${rs[0].camp}]: arranque med ${median(rs.map((r) => r.boot))} ms · FPS reposo med ${median(rs.map((r) => r.rest))} (peor ${Math.min(...rs.map((r) => r.rest))}) · FPS x10 animados med ${median(rs.map((r) => r.busy))} (peor ${Math.min(...rs.map((r) => r.busy))}) · ticks/s x10 med ${median(rs.map((r) => r.tps))}`);
   }
   console.log(`::notice title=Auditoría FPS ${name}::${lines.join(' || ')}`);
 }

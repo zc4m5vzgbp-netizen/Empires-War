@@ -12,6 +12,7 @@ import { centerCameraOn, createCameraModel, panCamera, worldToScreen, zoomCamera
 import { GameScene } from './render/GameScene.ts';
 import { mapBounds, tileToWorld } from './render/iso.ts';
 import { findPlacementNear } from './simulation/placement.ts';
+import { issueCommand } from './simulation/commands.ts';
 import { createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
 import { App } from './ui/App.tsx';
 import { countMilitaryAnimations } from './render/militaryArt.ts';
@@ -256,6 +257,17 @@ if (new URLSearchParams(location.search).has('test')) {
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     findPlacementFor: (type: BuildingType, x: number, y: number) => findPlacementNear(world, type, x, y),
     viewInfo: (id: number) => scene?.debugView(id) ?? null,
+    /** Solo diagnóstico: cada aldeano a recolectar el recurso más cercano (para medir con todos animados). */
+    orderAllGather: () => {
+      const all = Object.values(world.entities);
+      for (const v of all) {
+        if (v.kind !== 'villager') continue;
+        let best: (typeof all)[number] | undefined;
+        let bd = Infinity;
+        for (const r of all) if (r.kind === 'resource') { const d = (r.x - v.x) ** 2 + (r.y - v.y) ** 2; if (d < bd) { bd = d; best = r; } }
+        if (best) issueCommand(world, { type: 'gather', playerId: v.owner, unitIds: [v.id], targetId: best.id });
+      }
+    },
     ghostInfo: () => scene?.debugGhost() ?? null,
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
