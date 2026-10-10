@@ -40,6 +40,7 @@ export class GameScene extends Phaser.Scene {
   private ghostFootprint: Phaser.GameObjects.Image | null = null;
   private marker: Phaser.GameObjects.Image | null = null;
   private markerMs = 0;
+  private readonly terrainPainters: (() => void)[] = [];
   private frames = 0;
   private ticks = 0;
   private stepTotalMs = 0;
@@ -94,6 +95,10 @@ export class GameScene extends Phaser.Scene {
    */
   private drawArtTerrain(): void {
     const { map } = this.deps.world;
+    // Si iOS descarta el contexto WebGL (p. ej. en segundo plano), las texturas pintadas se pierden: se repintan.
+    this.renderer.on('restorewebgl', () => {
+      for (const paint of this.terrainPainters) paint();
+    });
     const CHUNK = 16;
     const frameFor = (kind: number, x: number, y: number) =>
       kind === TerrainKind.Water
@@ -114,16 +119,21 @@ export class GameScene extends Phaser.Scene {
         const minY = tileToWorld(cx, cy).y - UP;
         const maxY = tileToWorld(x1, y1).y + DOWN;
         const rt = this.add.renderTexture(minX, minY, Math.ceil(maxX - minX), Math.ceil(maxY - minY)).setOrigin(0, 0).setDepth(-1e6);
-        for (let y = cy; y <= y1; y++) {
-          for (let x = cx; x <= x1; x++) {
-            const kind = terrainAt(map, x, y) ?? TerrainKind.Grass;
-            const pos = tileToWorld(x, y);
-            const frame = frameFor(kind, x, y);
-            const o = pivot(this, frame);
-            rt.stamp(ART, frame, pos.x - minX, pos.y - minY, { originX: o.x, originY: o.y });
+        const paint = () => {
+          rt.clear();
+          for (let y = cy; y <= y1; y++) {
+            for (let x = cx; x <= x1; x++) {
+              const kind = terrainAt(map, x, y) ?? TerrainKind.Grass;
+              const pos = tileToWorld(x, y);
+              const frame = frameFor(kind, x, y);
+              const o = pivot(this, frame);
+              rt.stamp(ART, frame, pos.x - minX, pos.y - minY, { originX: o.x, originY: o.y });
+            }
           }
-        }
-        rt.render();
+          rt.render();
+        };
+        paint();
+        this.terrainPainters.push(paint);
       }
     }
     for (let y = 0; y < map.height; y++) {
