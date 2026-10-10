@@ -24,3 +24,13 @@ Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/sk
 - `docs/REQUIREMENTS_MATRIX.md` — fuente de verdad de requisitos y evidencia.
 - `docs/QUALITY_MATRIX.md` — auditoría auxiliar de calidad de agentes, si está presente.
 - Inspiración de procesos: obra/superpowers, addyosmani/agent-skills, anthropics/skills. No se ejecutan scripts externos ni se importan licencias automáticamente.
+
+## Skills especializadas (activar solo cuando correspondan)
+- `.agents/skills/mobile-rts-testing/SKILL.md`: controles táctiles, HUD, cámara y WebKit.
+- `.agents/skills/rts-performance-benchmarking/SKILL.md`: métricas de simulación, render y población.
+- `.agents/skills/github-pr-integration-guard/SKILL.md`: compatibilidad entre PR y protección de `main`.
+- `.agents/skills/savegame-integrity-determinism/SKILL.md`: IndexedDB, esquemas y determinismo.
+- `.agents/skills/rts-gameplay-combat-verification/SKILL.md`: producción, combate e IA.
+- `.agents/skills/game-art-pipeline-license-audit/SKILL.md`: atlas, animaciones, procedencia y licencias.
+
+Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
