@@ -34,3 +34,6 @@ Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/sk
 - `.agents/skills/game-art-pipeline-license-audit/SKILL.md`: atlas, animaciones, procedencia y licencias.
 
 Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
+
+## Orquestación de entregas complejas
+Activar `.agents/skills/rts-delivery-orchestrator/SKILL.md` para tareas que cruzan arte, simulación, UI, pruebas o integración. Mantener `docs/DELIVERY_LEDGER.md` como registro de subcasos y evidencias, sin sustituir `docs/REQUIREMENTS_MATRIX.md` como fuente de requisitos.
