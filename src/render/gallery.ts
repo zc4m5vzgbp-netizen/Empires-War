@@ -2,6 +2,7 @@ import type * as Phaser from 'phaser';
 import { ART, pivot } from './art.ts';
 import { tileToWorld } from './iso.ts';
 import { MIL, type MilUnit, milAnimKey, milFrame } from './militaryArt.ts';
+import { ECO, type VillagerAnim, villagerAnimKey, villagerFrame } from './villagerArt.ts';
 
 // Galería de estilo (solo con ?galeria=1): muestra arte del atlas que la partida aún no usa
 // (soldados, piedra, torre, iglesia…) para evaluar la dirección artística. Es decoración:
@@ -21,6 +22,7 @@ export function addGallery(scene: Phaser.Scene): void {
     const o = pivot(scene, it.frame);
     scene.add.image(p.x, p.y, ART, it.frame).setOrigin(o.x, o.y).setScale(it.scale ?? 1).setDepth(p.y);
   }
+  if (scene.textures.exists(ECO)) addVillagerTasks(scene);
   if (scene.textures.exists(MIL)) {
     addMilitary(scene);
     return;
@@ -75,4 +77,15 @@ function addMilitary(scene: Phaser.Scene): void {
   put('archer', 24, 29, 'death', 270);
   put('swordsman', 26, 29, 'idle', 270);
   put('archer', 27, 29, 'idle', 270);
+}
+
+/** Aldeanas de 0 A.D. haciendo cada tarea del contrato gráfico, en fila, mirando hacia la cámara (270°). */
+function addVillagerTasks(scene: Phaser.Scene): void {
+  const row: VillagerAnim[] = ['idle', 'walk', 'chop', 'mine', 'forage', 'farm', 'build', 'carry/wood', 'carry/stone', 'carry/gold', 'carry/food'];
+  row.forEach((anim, i) => {
+    const p = tileToWorld(8 + i, 21 + (i % 2));
+    const frame = villagerFrame(anim, 270, 0);
+    const o = pivot(scene, frame, ECO);
+    scene.add.sprite(p.x, p.y, ECO, frame).setOrigin(o.x, o.y).setDepth(p.y).play(villagerAnimKey(anim, 270));
+  });
 }

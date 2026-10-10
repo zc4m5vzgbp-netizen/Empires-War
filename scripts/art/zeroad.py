@@ -97,7 +97,20 @@ class Resolver:
                             a['props'].append({'point': p.get('attachpoint'), 'actor': p.get('actor')})
         return a
 
-    def collect(self, rel: str, wanted_anims: list[str] | None = None) -> dict:
+    def variant_info(self, rel: str) -> dict:
+        """Variante de tarea (p. ej. biped/female_gather_tree.xml): sus animaciones y sus herramientas."""
+        info = {'anims': {}, 'props': []}
+        for node in self.variant_nodes(self.xml(f'variants/{rel}')):
+            for an in node.iter('animation'):
+                name = (an.get('name') or '').lower()
+                if name and name not in info['anims'] and an.get('file'):
+                    info['anims'][name] = an.get('file')
+            for p in node.iter('prop'):
+                if p.get('actor'):
+                    info['props'].append({'point': p.get('attachpoint'), 'actor': p.get('actor')})
+        return info
+
+    def collect(self, rel: str, wanted_anims: list | None = None) -> dict:
         """Actor con accesorios resueltos (recursivo) y ficheros descargados."""
         a = self.actor(rel)
         if a['mesh']:
@@ -106,11 +119,27 @@ class Resolver:
             a['tex_path'] = self.texture(a['textures']['baseTex'])
         a['props'] = [dict(p, data=self.collect(p['actor'])) for p in a['props']]
         if wanted_anims:
-            for key in wanted_anims:
-                f = a['anims'].get(key.lower())
+            for spec in wanted_anims:
+                name, variant = anim_spec(spec)
+                if variant:
+                    vi = self.variant_info(variant)
+                    f = vi['anims'].get(name.lower())
+                    for p in vi['props']:
+                        self.collect(p['actor'])
+                else:
+                    f = a['anims'].get(name.lower())
                 if f:
                     self.ensure(f'animation/{f}')
+                else:
+                    print('FALTA animación', rel, spec)
         return a
+
+
+def anim_spec(spec) -> tuple[str, str | None]:
+    """«Walk» (animación del actor) o {"variant": "biped/x.xml", "anim": "gather_tree"} (variante de tarea)."""
+    if isinstance(spec, dict):
+        return spec['anim'], spec['variant']
+    return spec, None
 
 
 # ---------------------------------------------------------------------------------------------------- renderizado
@@ -320,10 +349,19 @@ def render(repo: str, cfg: dict, out: str) -> None:
         frame_box(cam, objs, size)
         cam.data.shift_y = u.get('shift_y', 0.25)
         meta[u['key']] = {'pivot': pivot(cam), 'anims': {}}
-        for key, name in u['anims'].items():
-            f = actor['anims'].get(name.lower())
+        for key, spec in u['anims'].items():
+            name, variant = anim_spec(spec)
+            extra = []
+            if variant:
+                vi = res.variant_info(variant)
+                f = vi['anims'].get(name.lower())
+                # Herramientas de la tarea (hacha, pico, cesta…): solo durante esta animación.
+                for p in vi['props']:
+                    extra += build(res.collect(p['actor']), objs, p['point'], 1)
+            else:
+                f = actor['anims'].get(name.lower())
             if not f:
-                print('sin animación', u['key'], name)
+                print('sin animación', u['key'], spec)
                 continue
             anim_objs = import_dae(f'animation/{f}')
             # Algunos ficheros traen dos esqueletos «Biped»; se usa la acción con más curvas (la que mueve el cuerpo).
@@ -343,7 +381,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
             arm.animation_data.action = action
             start, end = action.frame_range
             n = u['frames'].get(key, 8)
-            loop = key not in ('death',)
+            loop = key not in ('death',) and not key.endswith('idle')
             frames = [start + (end - start) * i / (n if loop else max(1, n - 1)) for i in range(n)]
             meta[u['key']]['anims'][key] = n
             print('RENDER', u['key'], key, f, f'{start}-{end}', flush=True)
@@ -354,6 +392,9 @@ def render(repo: str, cfg: dict, out: str) -> None:
                 for i, fr in enumerate(frames):
                     sc.frame_set(int(fr), subframe=fr - int(fr))
                     save(os.path.join(out, u['key'], key, str(ang), f'{i}.png'))
+            for o in extra:
+                if o.name in bpy.data.objects:
+                    bpy.data.objects.remove(o, do_unlink=True)
 
     for b in cfg.get('buildings', []):
         sc, cam = reset()

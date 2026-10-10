@@ -15,6 +15,7 @@ import { findPlacementNear } from './simulation/placement.ts';
 import { createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
 import { App } from './ui/App.tsx';
 import { countMilitaryAnimations } from './render/militaryArt.ts';
+import { countVillagerAnimations } from './render/villagerArt.ts';
 import { createHudStore } from './ui/store.ts';
 import './ui/styles.css';
 
@@ -253,5 +254,6 @@ if (new URLSearchParams(location.search).has('test')) {
     objectCount: () => scene?.children.list.length ?? 0,
     textures: () => scene?.textures.getTextureKeys() ?? [],
     militaryAnimCount: () => (scene ? countMilitaryAnimations(scene) : 0),
+    villagerAnimCount: () => (scene ? countVillagerAnimations(scene) : 0),
   };
 }
