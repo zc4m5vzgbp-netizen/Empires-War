@@ -1,4 +1,4 @@
-# Plan de validación — seis Skills especializadas
+# Plan de validación — Skills especializadas (plan original de seis; dos consolidadas)
 
 Fecha: 2026-10-10. Estado: **instrucciones creadas, beneficios todavía no demostrados**.
 
@@ -6,9 +6,9 @@ Fecha: 2026-10-10. Estado: **instrucciones creadas, beneficios todavía no demos
 | --- | --- | --- | --- |
 | mobile-rts-testing | VIS-07, panel sobre piedra | toque → orden → +10 piedra en WebKit | Pendiente |
 | rts-performance-benchmarking | población 100/300/600 | mediana FPS y p95 tick por escenario | Pendiente |
-| github-pr-integration-guard | PR #10 + #11 | conflictos, solapamientos, regresiones detectadas | Pendiente |
+| rts-delivery-orchestrator (absorbe PR guard) | PR #10 + #11 | conflictos, solapamientos, regresiones detectadas | Pendiente |
 | savegame-integrity-determinism | partida guardada/reanudada | igualdad de estado y ticks, recuperación | Pendiente |
-| rts-gameplay-combat-verification | primera unidad militar funcional | pruebas deterministas de orden/daño/producción | Pendiente |
+| empires-war-development (absorbe combate) | primera unidad militar funcional | pruebas deterministas de orden/daño/producción | Pendiente |
 | game-art-pipeline-license-audit | sprites del PR #11 | frames, anclas, licencias y carga diferida | Pendiente |
 
 ## Método
@@ -21,3 +21,6 @@ Fecha: 2026-10-10. Estado: **instrucciones creadas, beneficios todavía no demos
 
 ## Dependencias
 Las seis Skills se añaden sobre la rama candidata del PR #10, sin tocar PR #11 de Claude ni `main`. Las pruebas automáticas de código deben ejecutarse al integrar cambios funcionales; este PR solo documenta procedimientos.
+
+## Consolidación aprobada
+Se retiraron las Skills independientes `github-pr-integration-guard` y `rts-gameplay-combat-verification`, después de trasladar sus procedimientos a `rts-delivery-orchestrator` y `empires-war-development`, respectivamente. `architectural-refactor` permanece en el repositorio, archivada/inactiva por defecto. Inventario objetivo: siete activas, una archivada. Los criterios siguen pendientes de pruebas reales.
