@@ -16,7 +16,7 @@ import {
   outlineKey,
 } from './entityTextures.ts';
 import { TILE_H, tileToWorld } from './iso.ts';
-import { ART, ART_BUILDINGS, TREES, type Dir, dirFromTileDelta, pivot } from './art.ts';
+import { ART, TREES, type Dir, buildingArt, dirFromTileDelta, pivot } from './art.ts';
 import { ECO, villagerAnimKey, villagerFrame } from './villagerArt.ts';
 import { villagerVisualAction, VILLAGER_ECO_ORIGIN } from './villagerVisualState.ts';
 
@@ -53,6 +53,14 @@ export class EntityView {
     private readonly art = false,
   ) {
     this.bars = scene.add.graphics().setDepth(1e7);
+  }
+
+  /** Solo pruebas (?test=1): textura, fotograma y animación del sprite de una entidad. */
+  debugView(id: EntityId): { texture: string; frame: string; anim: string | null; depth: number } | null {
+    const v = this.views.get(id);
+    if (!v) return null;
+    const anim = (v.main as Phaser.GameObjects.Sprite).anims?.currentAnim?.key ?? null;
+    return { texture: v.main.texture.key, frame: String(v.main.frame.name), anim, depth: v.main.depth };
   }
 
   /** Borra todo (p. ej. al cargar una partida); se recrea en el siguiente sync. */
@@ -115,12 +123,12 @@ export class EntityView {
       };
     }
     const size = BUILDINGS[e.type].size;
-    if (this.art && e.type in ART_BUILDINGS) {
-      const a = ART_BUILDINGS[e.type]!;
-      const o = pivot(this.scene, a.frame);
+    const a = this.art ? buildingArt(this.scene, e.type) : undefined;
+    if (a) {
+      const o = pivot(this.scene, a.frame, a.texture);
       return {
         kind: e.kind,
-        main: add.sprite(0, 0, ART, a.frame).setOrigin(o.x, o.y).setScale(size / a.drawnSize),
+        main: add.sprite(0, 0, a.texture, a.frame).setOrigin(o.x, o.y).setScale(size / a.drawnSize),
         foundation: add.image(0, 0, foundationKey(size)),
         ring: add.image(0, 0, outlineKey(size)).setVisible(false),
       };
@@ -184,7 +192,7 @@ export class EntityView {
         const front = c.y + (size * TILE_H) / 2;
         const ratio = e.complete ? 1 : constructionRatio(e.type, e.buildProgress);
         view.main.setPosition(c.x, c.y).setDepth(front).setAlpha(e.complete ? 1 : 0.15 + 0.6 * ratio);
-        const anim = this.art && e.type in ART_BUILDINGS ? ART_BUILDINGS[e.type]?.anim : undefined;
+        const anim = this.art ? buildingArt(this.scene, e.type)?.anim : undefined;
         if (anim && e.complete && view.anim !== anim) {
           (view.main as Phaser.GameObjects.Sprite).play(anim);
           view.anim = anim;

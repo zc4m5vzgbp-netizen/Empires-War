@@ -191,6 +191,54 @@ async function mobileFlow(browserType, name) {
     }
     await T(page, 'setTimeScale', 1);
 
+    // 4c. Integración visual (auditoría Claude): aldeana 0 A.D. en la partida normal y campamento maderero
+    //     con su atlas: vista previa, cimiento, edificio terminado, selección por toque sobre el dibujo.
+    {
+      const vi = await T(page, 'viewInfo', v.id);
+      if (vi?.texture !== 'eco') throw new Error(`la aldeana no usa el atlas eco: ${JSON.stringify(vi)}`);
+      if (!/^eco\/villager\//.test(vi.anim ?? '')) throw new Error(`la aldeana no tiene animación eco: ${JSON.stringify(vi)}`);
+      step(`aldeana con atlas 0 A.D. en la partida (${vi.anim})`);
+      let ww = await T(page, 'world');
+      if (ww.players['1'].stockpile.wood < 100) throw new Error(`madera insuficiente para el campamento: ${ww.players['1'].stockpile.wood}`);
+      let pv = await screenOfTile(page, ww.entities[v.id].x, ww.entities[v.id].y, 16);
+      await page.touchscreen.tap(pv.x, pv.y);
+      await waitFor(async () => (await T(page, 'selection')).includes(v.id), 3000, 'selección para el campamento');
+      // Los botones de construir deben caber en la pantalla del iPhone y medir al menos 44 px.
+      const btn = page.getByRole('button', { name: /Construir Campamento maderero/ });
+      const bb = await btn.boundingBox();
+      const vp = page.viewportSize();
+      if (!bb || bb.height < 44 || bb.y < 0 || bb.y + bb.height > vp.height || bb.x + bb.width > vp.width) throw new Error(`botón del campamento fuera de pantalla o pequeño: ${JSON.stringify(bb)}`);
+      r.panelTop = Math.round((await page.locator('section.panel').boundingBox()).y);
+      await btn.tap();
+      const tree = Object.values(ww.entities).find((e) => e.kind === 'resource' && e.type === 'tree');
+      const spot = await T(page, 'findPlacementFor', 'lumberCamp', tree.x + 2, tree.y + 2);
+      const pc = await screenOfTile(page, spot.x, spot.y);
+      await page.touchscreen.tap(pc.x, pc.y);
+      const confirm = page.getByRole('button', { name: 'Confirmar' });
+      await waitFor(async () => !(await confirm.isDisabled()), 3000, 'vista previa válida del campamento');
+      const gi = await T(page, 'ghostInfo');
+      if (gi?.texture !== 'camp' || gi.frame !== 'camp/lumberCamp' || !gi.visible) throw new Error(`vista previa sin arte del campamento: ${JSON.stringify(gi)}`);
+      step('vista previa del campamento con su atlas');
+      await confirm.tap();
+      const campOf = (s) => Object.values(s.entities).find((e) => e.kind === 'building' && e.type === 'lumberCamp');
+      await waitFor(async () => campOf(await T(page, 'world')), 3000, 'cimiento del campamento');
+      await T(page, 'setTimeScale', 10);
+      await waitFor(async () => campOf(await T(page, 'world'))?.complete, 90000, 'campamento terminado');
+      await T(page, 'setTimeScale', 1);
+      const camp = campOf(await T(page, 'world'));
+      const ci = await T(page, 'viewInfo', camp.id);
+      if (ci?.texture !== 'camp' || ci.frame !== 'camp/lumberCamp') throw new Error(`campamento sin su atlas: ${JSON.stringify(ci)}`);
+      step(`campamento maderero terminado con su atlas (profundidad ${Math.round(ci.depth)})`);
+      // Deseleccionar y tocar el tejado del dibujo (≈ 40 px por encima del centro de la huella).
+      await page.getByRole('button', { name: 'Quitar selección' }).tap().catch(() => {});
+      const roof = await screenOfTile(page, camp.x + 0.5, camp.y + 0.5, 40);
+      await page.touchscreen.tap(roof.x, roof.y);
+      await waitFor(async () => (await T(page, 'selection')).includes(camp.id), 3000, 'selección del campamento con un toque');
+      await page.getByText('Campamento maderero').first().waitFor({ timeout: 3000 });
+      step('toque sobre el tejado selecciona el campamento');
+      await page.screenshot({ path: `smoke-campamento-${name}.png` });
+    }
+
     // 5. Guardar.
     await page.getByRole('button', { name: 'Partida' }).tap();
     await page.getByRole('button', { name: 'Guardar' }).tap();
@@ -247,7 +295,7 @@ async function mobileFlow(browserType, name) {
     r.objectsEnd = await T(page, 'objectCount');
 
     r.errors = errors;
-    const military = requested.filter((u) => u.includes('/assets/0ad'));
+    const military = requested.filter((u) => u.includes('/assets/0ad/'));
     if (military.length) throw new Error(`la partida normal descargó arte de 0 A.D. aún no integrado: ${military.join(', ')}`);
     step('la partida normal no descarga el arte militar (carga perezosa)');
     r.ok = errors.length === 0;

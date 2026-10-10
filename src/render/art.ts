@@ -1,6 +1,7 @@
 import type * as Phaser from 'phaser';
 import type { BuildingType } from '../content/economy.ts';
 import { TILE_H, TILE_W } from './iso.ts';
+import { CAMP, CAMP_DRAWN_TILES, CAMP_FRAMES } from './campArt.ts';
 
 // Arte de terceros con licencia compatible: gráficos de Unknown Horizons (CC-BY-SA 3.0).
 // Atlas generado por scripts/art/build-uh-atlas.py; créditos en public/assets/uh/CREDITS.md.
@@ -19,10 +20,22 @@ export const GRASS_VARIANTS = 6;
 export const TREES = ['maple0', 'maple1', 'maple2', 'maple3', 'spruce0', 'spruce1', 'tupelo0', 'tupelo1', 'tupelo2', 'birch0'];
 
 /** Edificio de la partida → fotograma del atlas y tamaño (en casillas) para el que se dibujó. */
-export const ART_BUILDINGS: Partial<Record<BuildingType, { frame: string; drawnSize: number; anim?: string }>> = {
+export interface BuildingArt { frame: string; drawnSize: number; anim?: string; /** Textura (atlas); por defecto ART. */ texture?: string }
+export const ART_BUILDINGS: Partial<Record<BuildingType, BuildingArt>> = {
   townCenter: { frame: 'bld/townCenter', drawnSize: 3 },
   mill: { frame: 'bld/mill/0', drawnSize: 2, anim: 'bld/mill' },
+  // Campamentos de 0 A.D. (atlas propio «camp», ver campArt.ts).
+  lumberCamp: { frame: CAMP_FRAMES.lumberCamp, drawnSize: CAMP_DRAWN_TILES, texture: CAMP },
+  miningCamp: { frame: CAMP_FRAMES.miningCamp, drawnSize: CAMP_DRAWN_TILES, texture: CAMP },
 };
+
+/** Arte de atlas de un edificio, solo si su textura está cargada; si no, undefined (arte provisional). */
+export function buildingArt(scene: Phaser.Scene, type: BuildingType): (BuildingArt & { texture: string }) | undefined {
+  const a = ART_BUILDINGS[type];
+  const texture = a?.texture ?? ART;
+  if (!a || !scene.textures.exists(texture) || !scene.textures.get(texture).has(a.frame)) return undefined;
+  return { ...a, texture };
+}
 
 /** Ancla (pies o centro de la huella) guardada en el atlas por el script de construcción. */
 export function pivot(scene: Phaser.Scene, frame: string, texture = ART): { x: number; y: number } {
