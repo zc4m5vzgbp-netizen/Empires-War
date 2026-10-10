@@ -1,6 +1,6 @@
 # Empires-War — reglas para agentes de programación
 
-Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/skills/`: `architectural-refactor` para refactorizaciones aprobadas y `preact-web-performance` para rendimiento de UI. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
+Lee este archivo antes de editar. Usa solo las Skills relevantes. `architectural-refactor` queda **archivada/inactiva por defecto** y solo se reactiva para una refactorización explícitamente aprobada; `preact-web-performance` se usa para rendimiento de UI. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
 
 ## Proyecto y límites
 - RTS isométrico web inspirado en la experiencia de AoE II; código y contenido originales o con licencia compatible y atribución.
@@ -28,12 +28,10 @@ Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/sk
 ## Skills especializadas (activar solo cuando correspondan)
 - `.agents/skills/mobile-rts-testing/SKILL.md`: controles táctiles, HUD, cámara y WebKit.
 - `.agents/skills/rts-performance-benchmarking/SKILL.md`: métricas de simulación, render y población.
-- `.agents/skills/github-pr-integration-guard/SKILL.md`: compatibilidad entre PR y protección de `main`.
 - `.agents/skills/savegame-integrity-determinism/SKILL.md`: IndexedDB, esquemas y determinismo.
-- `.agents/skills/rts-gameplay-combat-verification/SKILL.md`: producción, combate e IA.
 - `.agents/skills/game-art-pipeline-license-audit/SKILL.md`: atlas, animaciones, procedencia y licencias.
 
-Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
+La integración de PR está incluida en `rts-delivery-orchestrator`; la verificación de combate y producción, en `empires-war-development`. Hay siete Skills activas y una archivada (`architectural-refactor`). Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
 
 ## Orquestación de entregas complejas
 Activar `.agents/skills/rts-delivery-orchestrator/SKILL.md` para tareas que cruzan arte, simulación, UI, pruebas o integración. Mantener `docs/DELIVERY_LEDGER.md` como registro de subcasos y evidencias, sin sustituir `docs/REQUIREMENTS_MATRIX.md` como fuente de requisitos.
