@@ -50,6 +50,7 @@ jobs:
       - name: Publicar en la rama «renders-0ad»
         run: |
           cp zeroad-commit.txt renders/
+          git -C zeroad checkout HEAD -- binaries/data/mods/public/art/LICENSE.txt
           cp zeroad/binaries/data/mods/public/art/LICENSE.txt renders/LICENSE-0AD.txt
           cd renders
           echo "::notice title=Renders::$(find . -name '*.png' | wc -l) imágenes"
