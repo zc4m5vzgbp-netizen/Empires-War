@@ -160,6 +160,20 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | PRO-01 | Esta matriz, decisiones y hoja de ruta mantenidas en cada bloque | 10 | todos | en progreso | `docs/` |
 | PRO-02 | Cada bloque entrega: lista de archivos, pruebas, resultados, pendientes y URL verificada | 10, 13 | todos | en progreso | Informe de entrega de cada bloque |
 
+## Apartado visual (VIS) — rama `feat/map-resources-art` (PR #8)
+
+`iPhone` en la evidencia = comprobado por el usuario en su iPhone. Sin esa marca, solo está comprobado en CI.
+
+| ID | Función | Estado | Prueba / evidencia |
+|---|---|---|---|
+| VIS-01 | Atlas de Unknown Horizons (CC-BY-SA 3.0) con anclas por fotograma | probado | Prueba de navegador (carga sin errores); créditos en `public/assets/uh/CREDITS.md`; iPhone (prototipo visual) |
+| VIS-02 | Suelo pintado en bloques (rendimiento) y repintado si se pierde el contexto WebGL | probado (repintado: sin probar) | Prueba de navegador: unos 400 objetos en escena; iPhone (fluido). El repintado tras perder el contexto WebGL no tiene prueba automática |
+| VIS-03 | Aldeanos animados en 8 direcciones, mirando hacia donde caminan | probado | `tests/visual.test.ts` («el aldeano mira hacia donde camina»); iPhone |
+| VIS-04 | Árbol, oro, piedra y bayas con arte de UH | probado | Prueba de navegador, paso 4b (toque → recolectar → depósito); capturas |
+| VIS-05 | Transiciones hierba–arena y orillas de arena entre hierba y agua | probado | `tests/visual.test.ts` (transiciones y orillas); capturas |
+| VIS-06 | Toque sobre oro, piedra y madera emite la orden y deposita +10 (regresión del informe «la piedra no responde») | probado | Prueba de navegador, paso 4b, en WebKit y Chromium |
+| VIS-07 | Los recursos no quedan tapados por la interfaz en la cámara inicial | **pendiente** | Diagnóstico en la prueba de navegador: con un aldeano seleccionado, la piedra queda bajo el panel y el oro bajo los botones |
+
 ## Funciones reservadas para el futuro (NO implementar ahora, §12)
 
 | ID | Función | Estado |
