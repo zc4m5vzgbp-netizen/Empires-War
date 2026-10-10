@@ -40,15 +40,18 @@ function openGrid(width: number, height: number, blockedTiles: [number, number][
   return { width, height, blocked };
 }
 
-test('Escenario: Centro Urbano, 3 aldeanos, 6 arbustos y reserva inicial, con IDs estables consecutivos', () => {
+test('Escenario: Centro Urbano, 3 aldeanos y cuatro recursos, con IDs estables consecutivos', () => {
   const w = make();
   assert.equal(buildings(w).length, 1);
   assert.equal(buildings(w)[0]!.type, 'townCenter');
   assert.equal(villagers(w).length, BLOCK1_SCENARIO.villagers.length);
-  assert.equal(bushes(w).length, BLOCK1_SCENARIO.berryBushes.length);
+  assert.equal(bushes(w).filter((r) => r.type === 'berryBush').length, BLOCK1_SCENARIO.berryBushes.length);
+  assert.equal(bushes(w).filter((r) => r.type === 'tree').length, 4);
+  assert.equal(bushes(w).filter((r) => r.type === 'goldMine').length, 2);
+  assert.equal(bushes(w).filter((r) => r.type === 'stoneMine').length, 2);
   assert.deepEqual(w.players[PLAYER_ID]!.stockpile, STARTING_STOCKPILE.value);
-  assert.deepEqual(entityList(w).map((e) => e.id), Array.from({ length: 10 }, (_, i) => i + 1));
-  assert.equal(w.nextEntityId, 11);
+  assert.deepEqual(entityList(w).map((e) => e.id), Array.from({ length: 18 }, (_, i) => i + 1));
+  assert.equal(w.nextEntityId, 19);
   // Todo el escenario está sobre terreno transitable.
   for (const e of entityList(w)) assert.equal(w.map.terrain[e.y * w.map.width + e.x], TerrainKind.Grass, `entidad ${e.id}`);
 });
