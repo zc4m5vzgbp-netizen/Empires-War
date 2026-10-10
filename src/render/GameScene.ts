@@ -87,31 +87,57 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Terreno con el arte del atlas: hierba variada, tierra, agua y bosques con árboles mezclados. */
+  /**
+   * Terreno con el arte del atlas. El suelo es estático: se pinta una sola vez en texturas por bloques
+   * de 16×16 casillas, así cada frame dibuja unas pocas imágenes grandes en lugar de miles de casillas.
+   * Los árboles siguen siendo imágenes sueltas para ordenarse en profundidad con las unidades.
+   */
   private drawArtTerrain(): void {
     const { map } = this.deps.world;
+    const CHUNK = 16;
     const frameFor = (kind: number, x: number, y: number) =>
       kind === TerrainKind.Water
         ? 'tile/water/0'
         : kind === TerrainKind.Dirt
           ? 'tile/dirt/0'
           : `tile/grass/${Math.floor(tileNoise(x, y) * GRASS_VARIANTS)}`;
+    // Las casillas del atlas miden 64×64 con el rombo apoyado en (32, 40).
+    const LEFT = 32;
+    const UP = 40;
+    const DOWN = 24;
+    for (let cy = 0; cy < map.height; cy += CHUNK) {
+      for (let cx = 0; cx < map.width; cx += CHUNK) {
+        const x1 = Math.min(cx + CHUNK, map.width) - 1;
+        const y1 = Math.min(cy + CHUNK, map.height) - 1;
+        const minX = tileToWorld(cx, y1).x - LEFT;
+        const maxX = tileToWorld(x1, cy).x + LEFT;
+        const minY = tileToWorld(cx, cy).y - UP;
+        const maxY = tileToWorld(x1, y1).y + DOWN;
+        const rt = this.add.renderTexture(minX, minY, Math.ceil(maxX - minX), Math.ceil(maxY - minY)).setOrigin(0, 0).setDepth(-1e6);
+        for (let y = cy; y <= y1; y++) {
+          for (let x = cx; x <= x1; x++) {
+            const kind = terrainAt(map, x, y) ?? TerrainKind.Grass;
+            const pos = tileToWorld(x, y);
+            const frame = frameFor(kind, x, y);
+            const o = pivot(this, frame);
+            rt.stamp(ART, frame, pos.x - minX, pos.y - minY, { originX: o.x, originY: o.y });
+          }
+        }
+        rt.render();
+      }
+    }
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        const kind = terrainAt(map, x, y) ?? TerrainKind.Grass;
+        if (terrainAt(map, x, y) !== TerrainKind.Forest) continue;
         const pos = tileToWorld(x, y);
-        const frame = frameFor(kind, x, y);
-        const o = pivot(this, frame);
-        this.add.image(pos.x, pos.y, ART, frame).setOrigin(o.x, o.y).setDepth(-1e6);
-        if (kind === TerrainKind.Forest) {
-          // Dos árboles por casilla con desplazamiento estable: bosque denso, como en un RTS clásico.
-          for (let i = 0; i < 2; i++) {
-            const tree = TREES[Math.floor(tileNoise(x, y, i + 1) * TREES.length)]!;
-            const jx = (tileNoise(x, y, i + 7) - 0.5) * 20;
-            const jy = (i === 0 ? -5 : 5) + (tileNoise(x, y, i + 11) - 0.5) * 4;
-            const t = pivot(this, `tree/${tree}`);
-            this.add.image(pos.x + jx, pos.y + jy, ART, `tree/${tree}`).setOrigin(t.x, t.y).setDepth(pos.y + jy);
-          }
+        // Un árbol por casilla y a veces un segundo, con desplazamiento estable: bosque denso sin sobrecargar.
+        const count = tileNoise(x, y, 5) < 0.35 ? 2 : 1;
+        for (let i = 0; i < count; i++) {
+          const tree = TREES[Math.floor(tileNoise(x, y, i + 1) * TREES.length)]!;
+          const jx = (tileNoise(x, y, i + 7) - 0.5) * (count === 2 ? 22 : 10);
+          const jy = (count === 2 ? (i === 0 ? -5 : 5) : 0) + (tileNoise(x, y, i + 11) - 0.5) * 4;
+          const t = pivot(this, `tree/${tree}`);
+          this.add.image(pos.x + jx, pos.y + jy, ART, `tree/${tree}`).setOrigin(t.x, t.y).setDepth(pos.y + jy);
         }
       }
     }
