@@ -92,11 +92,20 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
             # Tamaño lineal = raíz del número de píxeles casi opacos (la sombra es semitransparente y no cuenta).
             alpha = by_key[f'{prefix}/{u}/{a}/270/0'].split()[3]
             figure_heights[u][a] = round(sum(alpha.histogram()[201:]) ** 0.5, 1)
+    # Animaciones distintas entre sí: el primer fotograma (dirección 270) no puede repetirse entre dos animaciones.
+    duplicates = []
+    for u, n in units.items():
+        seen = {}
+        for a in n:
+            b = by_key[f'{prefix}/{u}/{a}/270/0'].tobytes()
+            if b in seen:
+                duplicates.append(f'{u}: {a} = {seen[b]}')
+            seen[b] = a
     walk_distinct = all(
         len({by_key[f'{prefix}/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top, 'duplicateAnims': duplicates}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')

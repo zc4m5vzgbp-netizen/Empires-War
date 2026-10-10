@@ -17,6 +17,7 @@ import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './t
 import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
 import { createMilitaryAnimations, galleryEnabled, preloadMilitary } from './militaryArt.ts';
+import { createVillagerAnimations, preloadVillagerArt } from './villagerArt.ts';
 import { groundFrame } from './terrainArt.ts';
 
 export interface GameSceneDeps {
@@ -56,7 +57,10 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     preloadArt(this);
-    if (galleryEnabled()) preloadMilitary(this);
+    if (galleryEnabled()) {
+      preloadMilitary(this);
+      preloadVillagerArt(this);
+    }
   }
 
   create(): void {
@@ -68,6 +72,7 @@ export class GameScene extends Phaser.Scene {
     else this.drawTerrain();
     if (art && galleryEnabled()) {
       createMilitaryAnimations(this);
+      createVillagerAnimations(this);
       addGallery(this);
     }
     this.entities = new EntityView(this, art);

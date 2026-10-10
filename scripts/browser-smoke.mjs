@@ -247,8 +247,8 @@ async function mobileFlow(browserType, name) {
     r.objectsEnd = await T(page, 'objectCount');
 
     r.errors = errors;
-    const military = requested.filter((u) => u.includes('/assets/0ad/'));
-    if (military.length) throw new Error(`la partida normal descargó el arte militar: ${military.join(', ')}`);
+    const military = requested.filter((u) => u.includes('/assets/0ad'));
+    if (military.length) throw new Error(`la partida normal descargó arte de 0 A.D. aún no integrado: ${military.join(', ')}`);
     step('la partida normal no descarga el arte militar (carga perezosa)');
     r.ok = errors.length === 0;
   } catch (e) {
@@ -376,6 +376,10 @@ async function galleryFlow() {
     const n = await T(page, 'militaryAnimCount');
     if (n !== 2 * 4 * 8) throw new Error(`animaciones militares: ${n} (se esperaban 64)`);
     r.steps.push(`atlas militar cargado; ${n} animaciones (2 unidades × 4 × 8 direcciones)`);
+    await waitFor(async () => (await T(page, 'textures')).includes('eco'), 15000, 'atlas del aldeano cargado');
+    const nv = await T(page, 'villagerAnimCount');
+    if (nv !== 15 * 8) throw new Error(`animaciones del aldeano: ${nv} (se esperaban 120)`);
+    r.steps.push(`atlas del aldeano cargado; ${nv} animaciones (15 × 8 direcciones)`);
     await T(page, 'centerOnTile', 18, 27);
     await sleep(1500);
     r.fps = Number((await page.locator('.stats dd').allTextContents())[0]);
