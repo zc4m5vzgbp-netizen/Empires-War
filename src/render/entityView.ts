@@ -115,8 +115,8 @@ export class EntityView {
       };
     }
     const size = BUILDINGS[e.type].size;
-    if (this.art) {
-      const a = ART_BUILDINGS[e.type];
+    if (this.art && e.type in ART_BUILDINGS) {
+      const a = ART_BUILDINGS[e.type as keyof typeof ART_BUILDINGS];
       const o = pivot(this.scene, a.frame);
       return {
         kind: e.kind,
@@ -184,7 +184,7 @@ export class EntityView {
         const front = c.y + (size * TILE_H) / 2;
         const ratio = e.complete ? 1 : constructionRatio(e.type, e.buildProgress);
         view.main.setPosition(c.x, c.y).setDepth(front).setAlpha(e.complete ? 1 : 0.15 + 0.6 * ratio);
-        const anim = this.art ? ART_BUILDINGS[e.type].anim : undefined;
+        const anim = this.art && e.type in ART_BUILDINGS ? ART_BUILDINGS[e.type as keyof typeof ART_BUILDINGS].anim : undefined;
         if (anim && e.complete && view.anim !== anim) {
           (view.main as Phaser.GameObjects.Sprite).play(anim);
           view.anim = anim;
