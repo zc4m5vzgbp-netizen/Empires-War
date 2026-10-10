@@ -16,12 +16,16 @@ import {
   outlineKey,
 } from './entityTextures.ts';
 import { TILE_H, tileToWorld } from './iso.ts';
+import { ART, ART_BUILDINGS, type Dir, dirFromTileDelta, pivot } from './art.ts';
 
 // Dibuja las entidades a partir del estado. Solo lee la simulación; nunca la modifica.
 
 interface View {
   kind: Entity['kind'];
-  main: Phaser.GameObjects.Image;
+  main: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite;
+  /** Dirección y animación actuales (solo con arte del atlas). */
+  dir?: Dir;
+  anim?: string;
   ring?: Phaser.GameObjects.Image;
   carry?: Phaser.GameObjects.Image;
   foundation?: Phaser.GameObjects.Image;
@@ -41,7 +45,11 @@ export class EntityView {
   private readonly views = new Map<EntityId, View>();
   private readonly bars: Phaser.GameObjects.Graphics;
 
-  constructor(private readonly scene: Phaser.Scene) {
+  constructor(
+    private readonly scene: Phaser.Scene,
+    /** true: sprites del atlas (art.ts); false: arte provisional generado por código. */
+    private readonly art = false,
+  ) {
     this.bars = scene.add.graphics().setDepth(1e7);
   }
 
@@ -61,6 +69,17 @@ export class EntityView {
 
   private create(e: Entity): View {
     const add = this.scene.add;
+    if (e.kind === 'villager' && this.art) {
+      const frame = 'vil/idle/270/0';
+      const o = pivot(this.scene, frame);
+      return {
+        kind: e.kind,
+        main: add.sprite(0, 0, ART, frame).setOrigin(o.x, o.y),
+        dir: 270,
+        ring: add.image(0, 0, RING_KEY).setVisible(false),
+        carry: add.image(0, 0, CARRY_FOOD_KEY).setVisible(false),
+      };
+    }
     if (e.kind === 'villager') {
       return {
         kind: e.kind,
@@ -72,11 +91,21 @@ export class EntityView {
     if (e.kind === 'resource') {
       return {
         kind: e.kind,
-        main: add.image(0, 0, BUSH_KEY).setOrigin(BUSH_ORIGIN.x, BUSH_ORIGIN.y),
+        main: add.image(0, 0, BUSH_KEY).setOrigin(BUSH_ORIGIN.x, BUSH_ORIGIN.y).setTint(({ berryBush: 0xffffff, tree: 0x3e9955, goldMine: 0xe5bb43, stoneMine: 0x9ba7b4 } as const)[e.type]),
         ring: add.image(0, 0, outlineKey(1)).setVisible(false),
       };
     }
     const size = BUILDINGS[e.type].size;
+    if (this.art) {
+      const a = ART_BUILDINGS[e.type];
+      const o = pivot(this.scene, a.frame);
+      return {
+        kind: e.kind,
+        main: add.sprite(0, 0, ART, a.frame).setOrigin(o.x, o.y).setScale(size / a.drawnSize),
+        foundation: add.image(0, 0, foundationKey(size)),
+        ring: add.image(0, 0, outlineKey(size)).setVisible(false),
+      };
+    }
     const origin = BUILDING_ORIGIN[e.type] ?? { x: 0.5, y: 0.8 };
     return {
       kind: e.kind,
@@ -102,14 +131,16 @@ export class EntityView {
         const p0 = prev.get(e.id) ?? e;
         const pos = tileToWorld(lerp(p0.x, e.x, alpha), lerp(p0.y, e.y, alpha));
         view.main.setPosition(pos.x, pos.y).setDepth(pos.y);
+        if (this.art) animateVillager(view, e.x - p0.x, e.y - p0.y, e.carryAmount > 0 && e.carryType === 'food');
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 0.5).setVisible(isSelected);
         view.carry
-          ?.setPosition(pos.x + 9, pos.y - 20)
+          ?.setTint(e.carryType === 'wood' ? 0x8b5a2b : e.carryType === 'gold' ? 0xf2c94c : e.carryType === 'stone' ? 0x9aa5ad : 0xffffff)
+          .setPosition(pos.x + 9, pos.y - 20)
           .setDepth(pos.y + 0.5)
           .setVisible(e.carryAmount > 0);
       } else if (e.kind === 'resource') {
         const pos = tileToWorld(e.x, e.y);
-        const fullness = Math.max(0, Math.min(1, e.amount / BERRY_BUSH.food));
+        const fullness = Math.max(0, Math.min(1, e.amount / (e.type === 'berryBush' ? BERRY_BUSH.food : e.type === 'tree' ? 150 : 500)));
         view.main.setPosition(pos.x, pos.y + 4).setDepth(pos.y + 4).setScale(0.65 + 0.35 * fullness);
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 1).setVisible(isSelected);
       } else {
@@ -118,6 +149,11 @@ export class EntityView {
         const front = c.y + (size * TILE_H) / 2;
         const ratio = e.complete ? 1 : constructionRatio(e.type, e.buildProgress);
         view.main.setPosition(c.x, c.y).setDepth(front).setAlpha(e.complete ? 1 : 0.15 + 0.6 * ratio);
+        const anim = this.art ? ART_BUILDINGS[e.type].anim : undefined;
+        if (anim && e.complete && view.anim !== anim) {
+          (view.main as Phaser.GameObjects.Sprite).play(anim);
+          view.anim = anim;
+        }
         view.foundation?.setPosition(c.x, c.y).setDepth(front - 0.6).setVisible(!e.complete);
         view.ring?.setPosition(c.x, c.y).setDepth(front - 0.5).setVisible(isSelected);
         if (!e.complete) {
@@ -135,6 +171,28 @@ export class EntityView {
         this.destroyView(view);
         this.views.delete(id);
       }
+    }
+  }
+}
+
+/** Elige animación (andar / cargar / quieto) y dirección a partir del movimiento del último tick. */
+function animateVillager(view: View, dx: number, dy: number, carrying: boolean): void {
+  const sprite = view.main as Phaser.GameObjects.Sprite;
+  const moving = Math.abs(dx) + Math.abs(dy) > 1e-6;
+  if (moving) view.dir = dirFromTileDelta(dx, dy);
+  const dir = view.dir ?? 270;
+  if (moving) {
+    const key = `${carrying ? 'vil/carry' : 'vil/walk'}/${dir}`;
+    if (view.anim !== key) {
+      sprite.play(key, true);
+      view.anim = key;
+    }
+  } else {
+    const frame = `${carrying ? 'vil/carryidle' : 'vil/idle'}/${dir}/0`;
+    if (view.anim !== frame) {
+      sprite.stop();
+      sprite.setFrame(frame);
+      view.anim = frame;
     }
   }
 }
