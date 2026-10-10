@@ -187,7 +187,7 @@ export class GameScene extends Phaser.Scene {
     const o = BUILDING_ORIGIN[placing.building] ?? { x: 0.5, y: 0.8 };
     this.ghostFootprint.setTexture(footprintKey(size, check?.valid ?? false)).setPosition(c.x, c.y).setVisible(true);
     if (artReady(this) && placing.building in ART_BUILDINGS) {
-      const a = ART_BUILDINGS[placing.building as keyof typeof ART_BUILDINGS];
+      const a = ART_BUILDINGS[placing.building]!
       const p = pivot(this, a.frame);
       this.ghost.setTexture(ART, a.frame).setOrigin(p.x, p.y).setScale(size / a.drawnSize);
     } else {
