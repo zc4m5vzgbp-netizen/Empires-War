@@ -44,6 +44,13 @@ export function pickAt(world: WorldState, wx: number, wy: number): Pick {
   for (const e of entityList(world)) {
     if (e.kind === 'resource' && ((e.x === t.x && e.y === t.y) || (e.x === t2.x && e.y === t2.y))) return { kind: 'resource', id: e.id };
   }
+  // Los árboles son altos: también se acepta tocar la copa (hasta ~3 casillas de altura sobre la base).
+  for (const lift of [32, 48, 64, 80]) {
+    const tt = tileAt(wy + lift);
+    for (const e of entityList(world)) {
+      if (e.kind === 'resource' && e.type === 'tree' && e.x === tt.x && e.y === tt.y) return { kind: 'resource', id: e.id };
+    }
+  }
   return null;
 }
 

@@ -16,7 +16,7 @@ import {
   outlineKey,
 } from './entityTextures.ts';
 import { TILE_H, tileToWorld } from './iso.ts';
-import { ART, ART_BUILDINGS, type Dir, dirFromTileDelta, pivot } from './art.ts';
+import { ART, ART_BUILDINGS, TREES, type Dir, dirFromTileDelta, pivot } from './art.ts';
 
 // Dibuja las entidades a partir del estado. Solo lee la simulación; nunca la modifica.
 
@@ -88,6 +88,15 @@ export class EntityView {
         carry: add.image(0, 0, CARRY_FOOD_KEY).setVisible(false),
       };
     }
+    if (e.kind === 'resource' && this.art) {
+      const frame = resourceFrame(e);
+      const o = pivot(this.scene, frame);
+      return {
+        kind: e.kind,
+        main: add.image(0, 0, ART, frame).setOrigin(o.x, o.y),
+        ring: add.image(0, 0, outlineKey(1)).setVisible(false),
+      };
+    }
     if (e.kind === 'resource') {
       return {
         kind: e.kind,
@@ -140,7 +149,13 @@ export class EntityView {
       } else if (e.kind === 'resource') {
         const pos = tileToWorld(e.x, e.y);
         const fullness = Math.max(0, Math.min(1, e.amount / (e.type === 'berryBush' ? BERRY_BUSH.food : e.type === 'tree' ? 150 : 500)));
-        view.main.setPosition(pos.x, pos.y + 4).setDepth(pos.y + 4).setScale(0.65 + 0.35 * fullness);
+        if (this.art) {
+          // Árboles a tamaño fijo; bayas y minas encogen un poco al agotarse.
+          const scale = e.type === 'tree' ? 1 : 0.75 + 0.25 * fullness;
+          view.main.setPosition(pos.x, pos.y).setDepth(pos.y).setScale(scale);
+        } else {
+          view.main.setPosition(pos.x, pos.y + 4).setDepth(pos.y + 4).setScale(0.65 + 0.35 * fullness);
+        }
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 1).setVisible(isSelected);
       } else {
         const c = buildingCenter(e);
@@ -193,5 +208,19 @@ function animateVillager(view: View, dx: number, dy: number, carrying: boolean):
       sprite.setFrame(frame);
       view.anim = frame;
     }
+  }
+}
+
+/** Fotograma del atlas para cada fuente de recursos (árbol con variante estable por id). */
+function resourceFrame(e: Extract<Entity, { kind: 'resource' }>): string {
+  switch (e.type) {
+    case 'tree':
+      return `tree/${TREES[e.id % TREES.length]}`;
+    case 'goldMine':
+      return 'res/gold';
+    case 'stoneMine':
+      return 'res/stone';
+    default:
+      return 'res/berry';
   }
 }

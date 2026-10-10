@@ -16,6 +16,7 @@ import { tileToWorld } from './iso.ts';
 import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './textures.ts';
 import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
+import { groundFrame } from './terrainArt.ts';
 
 export interface GameSceneDeps {
   world: WorldState;
@@ -100,12 +101,8 @@ export class GameScene extends Phaser.Scene {
       for (const paint of this.terrainPainters) paint();
     });
     const CHUNK = 16;
-    const frameFor = (kind: number, x: number, y: number) =>
-      kind === TerrainKind.Water
-        ? 'tile/water/0'
-        : kind === TerrainKind.Dirt
-          ? 'tile/dirt/0'
-          : `tile/grass/${Math.floor(tileNoise(x, y) * GRASS_VARIANTS)}`;
+    const at = (x: number, y: number) => terrainAt(map, x, y);
+    const frameFor = (_kind: number, x: number, y: number) => groundFrame(at, x, y, Math.floor(tileNoise(x, y) * GRASS_VARIANTS));
     // Las casillas del atlas miden 64×64 con el rombo apoyado en (32, 40).
     const LEFT = 32;
     const UP = 40;
