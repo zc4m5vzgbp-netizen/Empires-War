@@ -287,6 +287,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
             loop = key not in ('death',)
             frames = [start + (end - start) * i / (n if loop else max(1, n - 1)) for i in range(n)]
             meta[u['key']]['anims'][key] = n
+            print('RENDER', u['key'], key, f, f'{start}-{end}', flush=True)
             for d in range(8):
                 ang = d * 45
                 # El modelo mira a −Y; se gira para que mire a la dirección de pantalla «ang» (0 = derecha).
@@ -319,6 +320,8 @@ def render(repo: str, cfg: dict, out: str) -> None:
         meta[b['key']] = {'pivot': pivot(cam), 'tiles': b['tiles']}
         save(os.path.join(out, b['key'], 'idle.png'))
 
+    os.makedirs(out, exist_ok=True)
+    print('META', json.dumps(meta), flush=True)
     with open(os.path.join(out, 'meta.json'), 'w') as f:
         json.dump(meta, f, indent=1)
 
@@ -337,4 +340,4 @@ if __name__ == '__main__':
         for n in sorted(r.needed):
             print(' ', n)
     else:
-        render(repo, cfg, argv[3])
+        render(os.path.abspath(repo), cfg, os.path.abspath(argv[3]))
