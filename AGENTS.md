@@ -1,6 +1,6 @@
 # Empires-War — reglas para agentes de programación
 
-Lee este archivo antes de editar. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
+Lee este archivo antes de editar. Según la tarea, usa las Skills en `.agents/skills/`: `architectural-refactor` para refactorizaciones aprobadas y `preact-web-performance` para rendimiento de UI. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
 
 ## Proyecto y límites
 - RTS isométrico web inspirado en la experiencia de AoE II; código y contenido originales o con licencia compatible y atribución.
