@@ -216,9 +216,11 @@ async function mobileFlow(browserType, name) {
     w = await T(page, 'world');
     // La reserva exacta depende de lo recolectado antes de guardar (paso 4b); la huella idéntica ya garantiza que coincide.
     if (mills(w).length !== 1 || !mills(w)[0].complete) throw new Error('estado cargado incompleto');
+    // La interfaz debe mostrar exactamente la reserva de la partida cargada.
     await waitFor(async () => {
       const ui2 = await readStockpileUi(page);
-      return ui2.wood === 100 && ui2.food >= 210;
+      const cur = (await T(page, 'world')).players['1'].stockpile;
+      return ['food', 'wood', 'gold', 'stone'].every((k) => ui2[k] === cur[k]);
     }, 3000, 'reserva cargada en pantalla');
     step('recarga de la página + Cargar: Molino, madera y comida restaurados (IndexedDB)');
 
