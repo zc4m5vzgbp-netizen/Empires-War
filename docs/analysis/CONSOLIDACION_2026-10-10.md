@@ -195,7 +195,7 @@ Cada etapa es un PR propio, sobre la rama de integración única, revertible con
 - Los 20 PR, con las relaciones de ancestros de las 20 ramas principales.
 
 **Pruebas ejecutadas en esta sesión**
-- 77 unitarias en la rama de análisis (76 superadas y 1 `todo` documentado, DEF-PICK-01), incluidas 4 de caracterización del contrato de arte y 2 de selección por toque. Las de arte comprueban que cada fotograma que pide el código existe en su atlas, incluido todo fotograma de suelo que puede generar el terreno de 48 y 160.
+- 78 unitarias en la rama de análisis (77 superadas y 1 `todo` documentado, DEF-PICK-01), incluidas 4 de caracterización del contrato de arte y 2 de selección por toque. Las de arte comprueban que cada fotograma que pide el código existe en su atlas, incluido todo fotograma de suelo que puede generar el terreno de 48 y 160.
 - Bancos: `scripts/bench/sim-scale.ts` (datos en `docs/analysis/data/sim-scale-recursos-{densos,dispersos}.md`) y `scripts/bench/render-scale.ts` (`data/render-scale.md`).
 - CI de la receta: 38076689613 (verde) y capturas 38076691119.
 
