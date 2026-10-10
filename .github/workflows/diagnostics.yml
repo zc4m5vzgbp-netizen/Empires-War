@@ -22,3 +22,8 @@ jobs:
           npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           node scripts/perf-probe.mjs
+      - name: Escala de simulación y render (caracterización, sin navegador)
+        run: |
+          echo "::notice title=Escala del render::$(npx tsx scripts/bench/render-scale.ts | tr '\n' ' ')"
+          EW_BENCH_TICKS=200 npx tsx scripts/bench/sim-scale.ts | tee sim-scale.txt
+          echo "::notice title=Escala de la simulación::$(tr '\n' ' ' < sim-scale.txt)"
