@@ -212,12 +212,13 @@ async function mobileFlow(browserType, name) {
       await btn.tap();
       const tree = Object.values(ww.entities).find((e) => e.kind === 'resource' && e.type === 'tree');
       const confirm = page.getByRole('button', { name: 'Confirmar' });
-      // Los aldeanos siguen trabajando junto a los árboles: un aldeano puede pisar el sitio entre la búsqueda y el
+      // Un aldeano puede pisar el sitio entre la búsqueda y el
       // toque («Hay una unidad en el sitio»). Se vuelve a buscar sitio y a tocar, hasta 3 veces, y se informa del motivo.
       let valid = false;
       let reason = '';
       for (let attempt = 0; attempt < 3 && !valid; attempt++) {
-        const spot = await T(page, 'findPlacementFor', 'lumberCamp', tree.x + 3 + attempt * 2, tree.y + 3);
+        // Delante (sureste) del Centro Urbano: nada más alto queda por delante del campamento, así el toque llega a su dibujo.
+        const spot = await T(page, 'findPlacementFor', 'lumberCamp', 28 + attempt * 2, 28);
         const pc = await screenOfTile(page, spot.x, spot.y);
         await page.touchscreen.tap(pc.x, pc.y);
         try {
@@ -245,9 +246,9 @@ async function mobileFlow(browserType, name) {
       const ci = await T(page, 'viewInfo', camp.id);
       if (ci?.texture !== 'camp' || ci.frame !== 'camp/lumberCamp') throw new Error(`campamento sin su atlas: ${JSON.stringify(ci)}`);
       step(`campamento maderero terminado con su atlas (profundidad ${Math.round(ci.depth)})`);
-      // Deseleccionar y tocar el tejado del dibujo (≈ 40 px por encima del centro de la huella).
+      // Deseleccionar y tocar el dibujo por encima de la huella (≈ 24 px sobre su centro: pared y tejado bajo).
       await page.getByRole('button', { name: 'Quitar selección' }).tap().catch(() => {});
-      const roof = await screenOfTile(page, camp.x + 0.5, camp.y + 0.5, 40);
+      const roof = await screenOfTile(page, camp.x + 0.5, camp.y + 0.5, 24);
       await page.touchscreen.tap(roof.x, roof.y);
       try {
         await waitFor(async () => (await T(page, 'selection')).includes(camp.id), 3000, 'selección del campamento con un toque');
@@ -264,7 +265,7 @@ async function mobileFlow(browserType, name) {
         throw new Error(`${e.message} · seleccionado ${JSON.stringify(sel)} · campamento #${camp.id} en ${camp.x},${camp.y} · aldeanos (px desde el toque) ${JSON.stringify(near)}`);
       }
       await page.getByText('Campamento maderero').first().waitFor({ timeout: 3000 });
-      step('toque sobre el tejado selecciona el campamento');
+      step('toque sobre el dibujo selecciona el campamento');
       await page.screenshot({ path: `smoke-campamento-${name}.png` });
     }
 
