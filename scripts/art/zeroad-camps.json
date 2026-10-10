@@ -37,9 +37,15 @@
       "extra_props": [
         {
           "actor": "props/special/eyecandy/stone_pile.xml",
-          "x": 6,
-          "y": -3,
+          "x": 9,
+          "y": -8,
           "rot": 0
+        },
+        {
+          "actor": "props/special/eyecandy/blocks_limestone_pile_a.xml",
+          "x": 3,
+          "y": -10,
+          "rot": 20
         }
       ]
     }
