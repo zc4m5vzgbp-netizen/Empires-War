@@ -18,6 +18,7 @@ import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimation
 import { addGallery } from './gallery.ts';
 import { createMilitaryAnimations, galleryEnabled, preloadMilitary } from './militaryArt.ts';
 import { createVillagerAnimations, preloadVillagerArt } from './villagerArt.ts';
+import { preloadCampArt } from './campArt.ts';
 import { groundFrame } from './terrainArt.ts';
 
 export interface GameSceneDeps {
@@ -60,6 +61,7 @@ export class GameScene extends Phaser.Scene {
     if (galleryEnabled()) {
       preloadMilitary(this);
       preloadVillagerArt(this);
+      preloadCampArt(this);
     }
   }
 

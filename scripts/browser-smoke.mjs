@@ -380,6 +380,8 @@ async function galleryFlow() {
     const nv = await T(page, 'villagerAnimCount');
     if (nv !== 15 * 8) throw new Error(`animaciones del aldeano: ${nv} (se esperaban 120)`);
     r.steps.push(`atlas del aldeano cargado; ${nv} animaciones (15 × 8 direcciones)`);
+    await waitFor(async () => (await T(page, 'textures')).includes('camp'), 15000, 'atlas de campamentos cargado');
+    r.steps.push('atlas de campamentos cargado');
     await T(page, 'centerOnTile', 18, 27);
     await sleep(1500);
     r.fps = Number((await page.locator('.stats dd').allTextContents())[0]);

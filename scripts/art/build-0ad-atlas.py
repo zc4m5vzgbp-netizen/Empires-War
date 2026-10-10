@@ -31,6 +31,7 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
     meta = json.loads((src / 'meta.json').read_text())
     items = []  # (clave, imagen, pivote x/y en píxeles de la imagen final)
     touches_top = {}
+    touches_edge = {}
     for key, m in meta.items():
         if 'anims' in m:
             paths = [(f'{prefix}/{key}/{a}/{d}/{i}', src / key / a / str(d) / f'{i}.png')
@@ -40,6 +41,9 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
         ims = [(k, clean(Image.open(p).convert('RGBA'))) for k, p in paths]
         # ¿Algún fotograma toca el borde superior del render? Entonces la figura está cortada.
         touches_top[key] = any(im.split()[3].crop((0, 0, im.width, 1)).getbbox() is not None for _, im in ims)
+        # Cualquier borde (izquierda, derecha, abajo): la imagen estaría recortada.
+        edges = lambda a: [a.crop((0, 0, 1, a.height)), a.crop((a.width - 1, 0, a.width, a.height)), a.crop((0, a.height - 1, a.width, a.height))]
+        touches_edge[key] = any(e.getbbox() is not None for _, im in ims for e in edges(im.split()[3]))
         w, h = ims[0][1].size
         box = None
         for _, im in ims:
@@ -54,7 +58,8 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
             c = c.resize((max(1, round(c.width * SCALE)), max(1, round(c.height * SCALE))), Image.LANCZOS)
             items.append((k, c, ((px - box[0]) * SCALE, (py - box[1]) * SCALE)))
 
-    W = 2048
+    # Ancho del atlas: 2048, o menos si hay pocas imágenes (potencia de 2 que quepa en una fila).
+    W = min(2048, 1 << (sum(im.width + 1 for _, im, _ in items) - 1).bit_length())
     items.sort(key=lambda t: (-t[1].height, t[0]))
     x = y = shelf = 0
     placed = []
@@ -105,7 +110,7 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
         len({by_key[f'{prefix}/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top, 'duplicateAnims': duplicates}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top, 'duplicateAnims': duplicates, 'touchesEdge': touches_edge}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')

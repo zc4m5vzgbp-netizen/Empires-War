@@ -296,7 +296,12 @@ def render(repo: str, cfg: dict, out: str) -> None:
             host = next((o for o in parent_objs if o.parent is None), None)
             for r in roots:
                 if host is not None and r is not host:
+                    # Se conserva la posición real: sin esto el accesorio heredaba la escala de unidades del edificio
+                    # y quedaba desplazado (tejado del silo celta flotando).
+                    bpy.context.view_layer.update()
+                    mw = r.matrix_world.copy()
                     r.parent = host
+                    r.matrix_world = mw
         for p in actor['props']:
             objs += build(p['data'], objs, p['point'], depth + 1)
         return objs
@@ -400,6 +405,20 @@ def render(repo: str, cfg: dict, out: str) -> None:
         sc, cam = reset()
         actor = res.collect(b['actor'])
         objs = build(actor)
+        # Accesorios extra de 0 A.D. (montones de troncos, piedras…) para distinguir edificios que comparten modelo.
+        host = next((o for o in objs if o.parent is None and not o.constraints), None)
+        for e in b.get('extra_props', []):
+            eobjs = build(res.collect(e['actor']))
+            for r in [o for o in eobjs if o.parent is None and not o.constraints]:
+                r.location = (e.get('x', 0.0), e.get('y', 0.0), 0.0)
+                r.rotation_euler = (0, 0, math.radians(e.get('rot', 0)))
+                r.scale = r.scale * e.get('scale', 1.0)
+                if host is not None:
+                    bpy.context.view_layer.update()
+                    mw = r.matrix_world.copy()
+                    r.parent = host
+                    r.matrix_world = mw
+            objs += eobjs
         meshes = [o for o in objs if o.type == 'MESH']
         bpy.context.view_layer.update()
         xs, ys = [], []
@@ -437,6 +456,8 @@ if __name__ == '__main__':
             r.collect(u['actor'], list(u['anims'].values()))
         for b in cfg.get('buildings', []):
             r.collect(b['actor'])
+            for e in b.get('extra_props', []):
+                r.collect(e['actor'])
         print(f'{len(r.needed)} ficheros de 0 A.D.')
         for n in sorted(r.needed):
             print(' ', n)
