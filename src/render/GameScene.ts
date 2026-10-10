@@ -14,7 +14,7 @@ import { BUILDING_ORIGIN, MARKER_KEY, buildingKey, createEntityTextures, footpri
 import { EntityView, type PrevPositions } from './entityView.ts';
 import { tileToWorld } from './iso.ts';
 import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './textures.ts';
-import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
+import { ART, GRASS_VARIANTS, TREES, artReady, buildingArt, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
 import { createMilitaryAnimations, galleryEnabled, preloadMilitary } from './militaryArt.ts';
 import { createVillagerAnimations, preloadVillagerArt } from './villagerArt.ts';
@@ -58,11 +58,10 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     preloadArt(this);
-    if (galleryEnabled()) {
-      preloadMilitary(this);
-      preloadVillagerArt(this);
-      preloadCampArt(this);
-    }
+    // Aldeana y campamentos forman parte de la partida. El arte militar sigue cargándose solo en la galería.
+    preloadVillagerArt(this);
+    preloadCampArt(this);
+    if (galleryEnabled()) preloadMilitary(this);
   }
 
   create(): void {
@@ -72,9 +71,9 @@ export class GameScene extends Phaser.Scene {
     if (art) createArtAnimations(this);
     if (art) this.drawArtTerrain();
     else this.drawTerrain();
+    createVillagerAnimations(this);
     if (art && galleryEnabled()) {
       createMilitaryAnimations(this);
-      createVillagerAnimations(this);
       addGallery(this);
     }
     this.entities = new EntityView(this, art);
@@ -169,6 +168,14 @@ export class GameScene extends Phaser.Scene {
     cam.centerOn(this.deps.camera.cx, this.deps.camera.cy);
   }
 
+  /** Solo pruebas (?test=1). */
+  debugView(id: number) {
+    return this.entities?.debugView(id) ?? null;
+  }
+  debugGhost() {
+    return this.ghost ? { visible: this.ghost.visible, texture: this.ghost.texture.key, frame: String(this.ghost.frame.name) } : null;
+  }
+
   showMarker(tile: Tile): void {
     if (!this.marker) return;
     const p = tileToWorld(tile.x, tile.y);
@@ -198,10 +205,10 @@ export class GameScene extends Phaser.Scene {
     const c = tileToWorld(origin.x + (size - 1) / 2, origin.y + (size - 1) / 2);
     const o = BUILDING_ORIGIN[placing.building] ?? { x: 0.5, y: 0.8 };
     this.ghostFootprint.setTexture(footprintKey(size, check?.valid ?? false)).setPosition(c.x, c.y).setVisible(true);
-    if (artReady(this) && placing.building in ART_BUILDINGS) {
-      const a = ART_BUILDINGS[placing.building]!
-      const p = pivot(this, a.frame);
-      this.ghost.setTexture(ART, a.frame).setOrigin(p.x, p.y).setScale(size / a.drawnSize);
+    const a = artReady(this) ? buildingArt(this, placing.building) : undefined;
+    if (a) {
+      const p = pivot(this, a.frame, a.texture);
+      this.ghost.setTexture(a.texture, a.frame).setOrigin(p.x, p.y).setScale(size / a.drawnSize);
     } else {
       this.ghost.setTexture(buildingKey(placing.building)).setOrigin(o.x, o.y).setScale(1);
     }

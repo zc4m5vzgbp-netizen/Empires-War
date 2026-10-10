@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { h, render } from 'preact';
 import { TEST_MAP } from './content/config.ts';
-import { STARTING_STOCKPILE } from './content/economy.ts';
+import { STARTING_STOCKPILE, type BuildingType } from './content/economy.ts';
 import { createController } from './input/controller.ts';
 import { INPUT } from './input/gestures.ts';
 import { bindPointerInput } from './input/pointerInput.ts';
@@ -254,6 +254,9 @@ if (new URLSearchParams(location.search).has('test')) {
       if (scene) scene.clock.timeScale = n;
     },
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
+    findPlacementFor: (type: BuildingType, x: number, y: number) => findPlacementNear(world, type, x, y),
+    viewInfo: (id: number) => scene?.debugView(id) ?? null,
+    ghostInfo: () => scene?.debugGhost() ?? null,
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
     textures: () => scene?.textures.getTextureKeys() ?? [],

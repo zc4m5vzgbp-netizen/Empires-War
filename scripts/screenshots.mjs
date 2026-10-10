@@ -57,6 +57,25 @@ async function tapTile(page, x, y, lift = 0) {
   await T(page, 'setTimeScale', 1);
   await sleep(300);
   await page.screenshot({ path: `${OUT}/06-iphone-molino-terminado.png` });
+  // Auditoría de integración: panel con los botones de campamentos, vista previa y campamento terminado.
+  {
+    w = await T(page, 'world');
+    const vv = w.entities[4];
+    await tapTile(page, vv.x, vv.y, 16);
+    await page.screenshot({ path: `${OUT}/15-iphone-panel-construir.png` });
+    await page.getByRole('button', { name: /Construir Campamento maderero/ }).tap();
+    const tree = Object.values(w.entities).find((e) => e.kind === 'resource' && e.type === 'tree');
+    const cs = await T(page, 'findPlacementFor', 'lumberCamp', tree.x + 2, tree.y + 2);
+    await tapTile(page, cs.x, cs.y);
+    await page.screenshot({ path: `${OUT}/16-iphone-vista-previa-campamento.png` });
+    await page.getByRole('button', { name: 'Confirmar' }).tap();
+    await T(page, 'setTimeScale', 10);
+    await page.waitForFunction(() => Object.values(window.__EW_TEST__.world().entities).some((e) => e.type === 'lumberCamp' && e.complete), null, { timeout: 90000 });
+    await T(page, 'setTimeScale', 1);
+    const camp = Object.values((await T(page, 'world')).entities).find((e) => e.type === 'lumberCamp');
+    await tapTile(page, camp.x + 0.5, camp.y + 0.5, 40);
+    await page.screenshot({ path: `${OUT}/17-iphone-campamento-seleccionado.png` });
+  }
   await page.getByRole('button', { name: 'Partida' }).tap();
   await sleep(200);
   await page.screenshot({ path: `${OUT}/07-iphone-menu-partida.png` });
