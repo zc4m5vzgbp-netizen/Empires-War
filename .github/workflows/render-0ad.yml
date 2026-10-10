@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "::notice title=Registro (final)::$(tail -n 25 render.log 2>/dev/null | cut -c1-180 | sed ':a;N;$!ba;s/\n/%0A/g')"
           echo "::notice title=Progreso::$(grep -E '^(RENDER|META|sin anim|anim)' render.log 2>/dev/null | head -n 12 | cut -c1-200 | sed ':a;N;$!ba;s/\n/%0A/g')"
-          echo "::notice title=Objetos::$(grep -E '^OBJ' render.log 2>/dev/null | head -n 40 | cut -c1-300 | sed ':a;N;$!ba;s/\n/%0A/g')"
+          echo "::notice title=Objetos::$(grep -E '^OBJ_GRANDE' render.log 2>/dev/null | head -n 40 | cut -c1-300 | sed ':a;N;$!ba;s/\n/%0A/g')"
           echo "::notice title=Ficheros::$(find renders -type f 2>/dev/null | wc -l) · $(ls renders 2>/dev/null | tr '\n' ' ')"
           echo "::notice title=Errores::$(grep -i -E 'error|traceback|exception|sin animación|vacía' render.log 2>/dev/null | head -n 15 | cut -c1-180 | sed ':a;N;$!ba;s/\n/%0A/g')"
 

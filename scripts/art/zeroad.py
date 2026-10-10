@@ -287,6 +287,16 @@ def render(repo: str, cfg: dict, out: str) -> None:
             hi = [round(max(p[i] for p in pts), 2) for i in range(3)]
             par = (o.parent.name if o.parent else '-') + ('/' + o.constraints[0].subtarget if o.constraints else '')
             print('OBJ', tag, o.name, par, lo, hi, flush=True)
+            dg = bpy.context.evaluated_depsgraph_get()
+            ev = o.evaluated_get(dg)
+            me = ev.to_mesh()
+            if len(me.vertices):
+                vs = [ev.matrix_world @ v.co for v in me.vertices]
+                lo2 = [round(min(v[i] for v in vs), 1) for i in range(3)]
+                hi2 = [round(max(v[i] for v in vs), 1) for i in range(3)]
+                if max(hi2[i] - lo2[i] for i in range(3)) > 12:
+                    print('OBJ_GRANDE', tag, o.name, lo2, hi2, flush=True)
+            ev.to_mesh_clear()
 
     def pivot(cam):
         p = world_to_camera_view(bpy.context.scene, cam, Vector((0, 0, 0)))
@@ -326,6 +336,8 @@ def render(repo: str, cfg: dict, out: str) -> None:
             loop = key not in ('death',)
             frames = [start + (end - start) * i / (n if loop else max(1, n - 1)) for i in range(n)]
             meta[u['key']]['anims'][key] = n
+            sc.frame_set(int(start))
+            debug(f"{u['key']}:{key}", objs)
             print('RENDER', u['key'], key, f, f'{start}-{end}', flush=True)
             for d in range(8):
                 ang = d * 45
