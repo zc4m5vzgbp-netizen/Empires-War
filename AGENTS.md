@@ -1,6 +1,6 @@
 # Empires-War — reglas para agentes de programación
 
-Lee este archivo antes de editar. Usa solo las Skills relevantes. `architectural-refactor` queda **archivada/inactiva por defecto** y solo se reactiva para una refactorización explícitamente aprobada; `preact-web-performance` se usa para rendimiento de UI. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
+Lee este archivo antes de editar. Usa solo las Skills relevantes. `architectural-refactor` queda **archivada/inactiva por defecto** y solo se reactiva para una refactorización explícitamente aprobada; las reglas de Preact/UI se aplican desde `rts-performance-benchmarking`. Aplica también `.agents/skills/empires-war-development/SKILL.md` cuando implementes, corrijas o revises código.
 
 ## Proyecto y límites
 - RTS isométrico web inspirado en la experiencia de AoE II; código y contenido originales o con licencia compatible y atribución.
@@ -31,7 +31,17 @@ Lee este archivo antes de editar. Usa solo las Skills relevantes. `architectural
 - `.agents/skills/savegame-integrity-determinism/SKILL.md`: IndexedDB, esquemas y determinismo.
 - `.agents/skills/game-art-pipeline-license-audit/SKILL.md`: atlas, animaciones, procedencia y licencias.
 
-La integración de PR está incluida en `rts-delivery-orchestrator`; la verificación de combate y producción, en `empires-war-development`. Hay siete Skills activas y una archivada (`architectural-refactor`). Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
+La integración de PR está incluida en `rts-delivery-orchestrator`; la verificación de combate y producción, en `empires-war-development`. Hay doce Skills activas y una archivada (`architectural-refactor`). Las Skills son instrucciones, no comprobaciones automáticas. Solo registrar un beneficio cuando haya pruebas, métricas o hallazgos verificables.
 
 ## Orquestación de entregas complejas
 Activar `.agents/skills/rts-delivery-orchestrator/SKILL.md` para tareas que cruzan arte, simulación, UI, pruebas o integración. Mantener `docs/DELIVERY_LEDGER.md` como registro de subcasos y evidencias, sin sustituir `docs/REQUIREMENTS_MATRIX.md` como fuente de requisitos.
+
+## Especialistas RTS (solo según tarea)
+- `.agents/skills/rts-ai-strategy-engineer/SKILL.md`: IA enemiga, exploración y dificultad sin trampas.
+- `.agents/skills/rts-pathfinding-army-movement/SKILL.md`: rutas, vados, grupos y formaciones.
+- `.agents/skills/rts-economy-production-engineer/SKILL.md`: recolección, depósitos, granjas, población y producción.
+- `.agents/skills/rts-combat-balance-engineer/SKILL.md`: reglas de daño, alcance y balance militar.
+- `.agents/skills/rts-world-generation-fog/SKILL.md`: mapas, semillas, visibilidad y niebla.
+- `.agents/skills/rts-release-regression-guardian/SKILL.md`: pruebas de candidata y aprobación de publicación.
+
+La Skill independiente `preact-web-performance` se consolidó en `rts-performance-benchmarking`; los controles de PR siguen en la orquestadora y la verificación genérica de combate sigue en Core Development, mientras `rts-combat-balance-engineer` cubre específicamente reglas y balance. Activar un máximo razonable de Skills por tarea; no cargar todas por defecto.
