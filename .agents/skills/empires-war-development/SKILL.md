@@ -8,7 +8,7 @@ description: Implementar, depurar y revisar funciones de Empires-War con pruebas
 **Actívala** al modificar simulación, economía, render, entrada, UI, guardado, pruebas o CI.
 
 ## 1. Contexto y alcance
-Leer `AGENTS.md`, `docs/QUALITY_MATRIX.md` y archivos afectados. Distinguir entre comportamiento confirmado, provisional y pendiente. No duplicar lógica entre simulación y Phaser. No alterar PR ajenos sin coordinar.
+Leer `AGENTS.md`, `docs/REQUIREMENTS_MATRIX.md` y archivos afectados. Consultar `docs/QUALITY_MATRIX.md` solo como auditoría auxiliar, si existe. Distinguir entre comportamiento confirmado, provisional y pendiente. No duplicar lógica entre simulación y Phaser. No alterar PR ajenos sin coordinar.
 
 ## 2. Depuración sistemática
 - Reproducir el fallo y registrar entrada, estado inicial y resultado esperado/observado.
@@ -38,7 +38,7 @@ Para cambios visuales o táctiles, iniciar servidor de vista previa con la ruta 
 Comprobar: base correcta, cambios fuera de alcance, determinismo, seguridad de guardado, licencias/créditos, accesibilidad táctil, rendimiento móvil, pruebas y compatibilidad de ramas. Si una prueba falla, no declarar «listo». Nunca fusionar automáticamente.
 
 ## 6. Entrega compacta
-Responder: **hecho**, **pruebas ejecutadas y resultados**, **pendiente/riesgos**, **PR**. Si una prueba no pudo ejecutarse, decirlo explícitamente. Actualizar `docs/QUALITY_MATRIX.md` solo con evidencia real.
+Responder: **hecho**, **pruebas ejecutadas y resultados**, **pendiente/riesgos**, **PR**. Si una prueba no pudo ejecutarse, decirlo explícitamente. Actualizar `docs/REQUIREMENTS_MATRIX.md` solo con evidencia real.
 
 ## Fuentes de prácticas (referencias, no dependencias)
 - https://github.com/obra/superpowers — depuración sistemática, TDD, verificación.
