@@ -137,7 +137,9 @@ function updateGather(ctx: TickContext, v: Villager): void {
       return;
     }
     const drop = (task.dropsiteId !== null ? getEntity(world, task.dropsiteId) : undefined) as Building | undefined;
-    const target = drop && drop.kind === 'building' && drop.complete ? drop : nearestDropsite(world, v, type);
+    const target = drop && drop.kind === 'building' && drop.owner === v.owner && drop.complete && BUILDINGS[drop.type].accepts.includes(type)
+      ? drop
+      : nearestDropsite(world, v, type);
     if (!target) {
       setIdle(v); // sin depósito disponible: conserva la carga
       return;

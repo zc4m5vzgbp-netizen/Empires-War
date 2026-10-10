@@ -28,7 +28,7 @@ export const outlineKey = (size: number) => `outline-${size}`;
 /** Origen de cada textura de edificio: el centro de su base coincide con el centro de la huella. */
 export const BUILDING_ORIGIN: Partial<Record<BuildingType, Pt>> = {};
 // Altura aproximada de las paredes para aceptar toques sobre el edificio (cubre el arte del atlas, más alto).
-export const BUILDING_WALL: Record<BuildingType, number> = { townCenter: 80, mill: 56 };
+export const BUILDING_WALL: Record<BuildingType, number> = { townCenter: 80, mill: 56, lumberCamp: 48, miningCamp: 48 };
 
 function polygon(g: Phaser.GameObjects.Graphics, pts: readonly Pt[], color: number, alpha = 1): void {
   const [first, ...rest] = pts;
@@ -188,6 +188,15 @@ export function createEntityTextures(scene: Phaser.Scene): void {
     roofLeft: 0x9a4031,
     roofRight: 0x7a3226,
     roofHeightRatio: 1.1,
+  });
+
+  drawBuilding(g, 'lumberCamp', {
+    wallLeft: 0x826039, wallRight: 0x604629, roofBack: 0x5e452c,
+    roofLeft: 0x886039, roofRight: 0x705034, roofHeightRatio: 0.65,
+  });
+  drawBuilding(g, 'miningCamp', {
+    wallLeft: 0x85858b, wallRight: 0x65656b, roofBack: 0x555760,
+    roofLeft: 0x777984, roofRight: 0x666872, roofHeightRatio: 0.65,
   });
 
   // Cimientos, huellas de colocación y contornos de selección por tamaño.

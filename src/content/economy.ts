@@ -41,7 +41,7 @@ export const BERRY_BUSH = {
   ...AOE2_UNVERIFIED,
 } as const;
 
-export type BuildingType = 'townCenter' | 'mill';
+export type BuildingType = 'townCenter' | 'mill' | 'lumberCamp' | 'miningCamp';
 
 export interface BuildingDef extends Sourced {
   type: BuildingType;
@@ -68,6 +68,26 @@ export const BUILDINGS: Record<BuildingType, BuildingDef> = {
     sourceVersion: 'n/a',
     sourceNote: 'Edificio provisional del Bloque 1: solo recibe recursos. Sin producción ni vida todavía.',
     status: 'provisional',
+  },
+  lumberCamp: {
+    type: 'lumberCamp',
+    name: 'Campamento maderero',
+    size: 2,
+    cost: { wood: 100 },
+    buildTimeSeconds: 35,
+    accepts: ['wood'],
+    constructible: true,
+    ...AOE2_UNVERIFIED,
+  },
+  miningCamp: {
+    type: 'miningCamp',
+    name: 'Campamento minero',
+    size: 2,
+    cost: { wood: 100 },
+    buildTimeSeconds: 35,
+    accepts: ['gold', 'stone'],
+    constructible: true,
+    ...AOE2_UNVERIFIED,
   },
   mill: {
     type: 'mill',
