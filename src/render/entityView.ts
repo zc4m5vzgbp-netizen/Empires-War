@@ -17,6 +17,8 @@ import {
 } from './entityTextures.ts';
 import { TILE_H, tileToWorld } from './iso.ts';
 import { ART, ART_BUILDINGS, TREES, type Dir, dirFromTileDelta, pivot } from './art.ts';
+import { ECO, villagerAnimKey, villagerFrame } from './villagerArt.ts';
+import { villagerVisualAction, VILLAGER_ECO_ORIGIN } from './villagerVisualState.ts';
 
 // Dibuja las entidades a partir del estado. Solo lee la simulación; nunca la modifica.
 
@@ -69,6 +71,14 @@ export class EntityView {
 
   private create(e: Entity): View {
     const add = this.scene.add;
+    if (e.kind === 'villager' && this.scene.textures.exists(ECO)) {
+      return {
+        kind: e.kind,
+        main: add.sprite(0, 0, ECO, villagerFrame('idle', 270)).setOrigin(VILLAGER_ECO_ORIGIN.x, VILLAGER_ECO_ORIGIN.y),
+        dir: 270,
+        ring: add.image(0, 0, RING_KEY).setVisible(false),
+      };
+    }
     if (e.kind === 'villager' && this.art) {
       const frame = 'vil/idle/270/0';
       const o = pivot(this.scene, frame);
@@ -140,7 +150,17 @@ export class EntityView {
         const p0 = prev.get(e.id) ?? e;
         const pos = tileToWorld(lerp(p0.x, e.x, alpha), lerp(p0.y, e.y, alpha));
         view.main.setPosition(pos.x, pos.y).setDepth(pos.y);
-        if (this.art) animateVillager(view, e.x - p0.x, e.y - p0.y, e.carryAmount > 0 && e.carryType === 'food');
+        if (this.scene.textures.exists(ECO)) {
+          const target = e.task.type === 'gather' ? world.entities[e.task.targetId] : undefined;
+          const moving = Math.abs(e.x - p0.x) + Math.abs(e.y - p0.y) > 1e-6;
+          if (moving) view.dir = dirFromTileDelta(e.x - p0.x, e.y - p0.y);
+          const anim = villagerVisualAction(e, moving, target?.kind === 'resource' ? target : undefined);
+          const key = villagerAnimKey(anim, view.dir ?? 270);
+          if (view.anim !== key) {
+            (view.main as Phaser.GameObjects.Sprite).play(key, true);
+            view.anim = key;
+          }
+        } else if (this.art) animateVillager(view, e.x - p0.x, e.y - p0.y, e.carryAmount > 0 && e.carryType === 'food');
         view.ring?.setPosition(pos.x, pos.y).setDepth(pos.y - 0.5).setVisible(isSelected);
         view.carry
           ?.setTint(e.carryType === 'wood' ? 0x8b5a2b : e.carryType === 'gold' ? 0xf2c94c : e.carryType === 'stone' ? 0x9aa5ad : 0xffffff)

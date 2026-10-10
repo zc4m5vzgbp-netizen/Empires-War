@@ -13,7 +13,7 @@ export const VILLAGER_KEY = 'villager';
 /** Punto del sprite del aldeano que coincide con sus pies. */
 export const VILLAGER_ORIGIN = { x: 0.5, y: 36 / 40 };
 /** Altura (px a zoom 1) del centro del cuerpo sobre los pies; se usa para tocar al aldeano. */
-export const VILLAGER_BODY_OFFSET = 16;
+export const VILLAGER_BODY_OFFSET = 19; // Centro táctil acordado para aldeana 0 A.D. (PR #13).
 export const RING_KEY = 'selection-ring';
 export const CARRY_FOOD_KEY = 'carry-food';
 export const BUSH_KEY = 'berry-bush';
