@@ -250,5 +250,7 @@ if (new URLSearchParams(location.search).has('test')) {
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
+    textures: () => scene?.textures.getTextureKeys() ?? [],
+    animCount: (prefix: string) => (scene ? [...scene.anims.anims.keys()].filter((k: string) => k.startsWith(prefix)).length : 0),
   };
 }

@@ -15,7 +15,8 @@
         "walk": 8,
         "attack": 8,
         "death": 8
-      }
+      },
+      "scale": 1.6
     },
     {
       "key": "archer",
@@ -31,7 +32,8 @@
         "walk": 8,
         "attack": 8,
         "death": 8
-      }
+      },
+      "scale": 1.6
     }
   ],
   "buildings": [

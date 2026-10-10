@@ -326,7 +326,9 @@ def render(repo: str, cfg: dict, out: str) -> None:
                 print('sin animación', u['key'], name)
                 continue
             anim_objs = import_dae(f'animation/{f}')
-            src = next((o for o in anim_objs if o.type == 'ARMATURE' and o.animation_data and o.animation_data.action), None)
+            # Algunos ficheros traen dos esqueletos «Biped»; se usa la acción con más curvas (la que mueve el cuerpo).
+            cands = [o for o in anim_objs if o.type == 'ARMATURE' and o.animation_data and o.animation_data.action]
+            src = max(cands, key=lambda o: len(o.animation_data.action.fcurves), default=None)
             if src is None:
                 print('animación vacía', f)
                 continue
