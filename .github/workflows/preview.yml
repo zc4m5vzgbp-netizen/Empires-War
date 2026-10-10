@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   # Se actualiza sola con cada cambio en la rama visual.
   push:
-    branches: [feat/visual-upgrade]
+    branches: [feat/visual-upgrade, feat/map-resources-art]
 
 permissions:
   contents: write
@@ -20,6 +20,15 @@ jobs:
         with:
           node-version: 22
       - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Prueba en navegador (Chromium y WebKit con perfil de iPhone, y escritorio)
+        run: |
+          npm run build
+          npx playwright install --with-deps chromium webkit
+          npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
+          npm run smoke:browser
       - run: npx vite build --base ./ --outDir vista-previa
       - name: Publicar en la rama «vista-previa»
         run: |
