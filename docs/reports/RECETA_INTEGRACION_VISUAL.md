@@ -158,3 +158,12 @@ Pruebas unitarias: no hay que cambiar ninguna. Las de #18 y #20 entran con la fu
 - Guardar y cargar con un campamento construido.
 - El depósito real de recursos en los campamentos (lógica de ChatGPT).
 - El campamento minero en la partida.
+
+
+## Actualización del 10 de octubre por la tarde: estabilidad del paso 4c
+
+Al repetir el CI aparecieron dos fallos intermitentes **de la prueba**, no del juego:
+- **WebKit:** la vista previa no llegó a ser válida. Causa probable: el aldeano del paso 4b sigue talando y pisa la huella entre la búsqueda del sitio y el toque, y `canPlaceBuilding` rechaza el sitio («Hay una unidad en el sitio»). Ahora la prueba reintenta hasta 3 veces y anota el motivo.
+- **Chromium:** el toque seleccionó el Centro Urbano (#1). El campamento había quedado justo detrás del Centro Urbano, y el toque, 40 px por encima, caía sobre el dibujo del Centro Urbano, que está delante. Ahora el campamento se coloca delante (sureste) del Centro Urbano, y el toque va a 24 px sobre el centro de la huella. Si vuelve a fallar, la prueba informa de qué se seleccionó y dónde estaban los aldeanos.
+
+Ejecuciones: 38079686193, en verde en WebKit y Chromium, más una repetición para comprobar estabilidad.
