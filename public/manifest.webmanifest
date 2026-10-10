@@ -1,0 +1,20 @@
+{
+  "id": "/Empires-War/",
+  "name": "Empires-War",
+  "short_name": "Empires-War",
+  "description": "Juego de estrategia en tiempo real para iPhone",
+  "start_url": "/Empires-War/",
+  "scope": "/Empires-War/",
+  "display": "standalone",
+  "background_color": "#17251c",
+  "theme_color": "#17251c",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "/Empires-War/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
