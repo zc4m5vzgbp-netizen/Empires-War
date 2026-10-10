@@ -57,3 +57,21 @@ test('licencia y créditos', () => {
   assert.match(credits, /female_citizen/);
   assert.ok(existsSync(`${ROOT}LICENSE-0AD.txt`));
 });
+
+test('regresión (auditoría 2026-10-10): la sombra no termina en un corte recto en el borde del fotograma', () => {
+  // El empaquetador mide, en cada render, si el encuadre corta una sombra visible (alfa ≥ 48) o la figura opaca.
+  // Antes del arreglo: 209 de 680 fotogramas con la sombra cortada en seco.
+  const cuts = (atlas.meta as unknown as { edgeCuts?: Record<string, { opaque: number; shadow: number; frames: number }> }).edgeCuts;
+  assert.ok(cuts?.villager, 'el atlas no trae la medida edgeCuts');
+  assert.equal(cuts.villager.shadow, 0);
+  assert.equal(cuts.villager.frames, 680);
+  // Puntas de azada y pico rozan el encuadre en 16 fotogramas (≤ 3,5 px en pantalla): documentado, no debe crecer.
+  assert.ok(cuts.villager.opaque <= 16, `figura cortada en ${cuts.villager.opaque} fotogramas`);
+});
+
+test('contrato estable: tamaño de fotograma y ancla de la aldeana no cambian con el reempaquetado', () => {
+  for (const f of Object.values(atlas.frames)) {
+    assert.deepEqual([f.frame.w, f.frame.h], [64, 78]);
+    assert.deepEqual(f.pivot, { x: 0.5, y: 0.6905 });
+  }
+});
