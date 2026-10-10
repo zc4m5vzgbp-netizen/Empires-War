@@ -126,7 +126,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
                 </button>
               )}
               {sel.canOrderBuild && (['lumberCamp', 'miningCamp'] as const).map((type) => (
-                <button type="button" key={type} onClick={() => actions.startBuild(type)}>
+                <button type="button" key={type} disabled={Object.entries(BUILDINGS[type].cost).some(([resource, amount]) => (s.stockpile[resource as keyof typeof s.stockpile] ?? 0) < (amount ?? 0))} onClick={() => actions.startBuild(type)}>
                   Construir {BUILDINGS[type].name} · {buildingCost(type)}
                 </button>
               ))}
