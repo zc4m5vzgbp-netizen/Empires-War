@@ -211,11 +211,24 @@ async function mobileFlow(browserType, name) {
       r.panelTop = Math.round((await page.locator('section.panel').boundingBox()).y);
       await btn.tap();
       const tree = Object.values(ww.entities).find((e) => e.kind === 'resource' && e.type === 'tree');
-      const spot = await T(page, 'findPlacementFor', 'lumberCamp', tree.x + 2, tree.y + 2);
-      const pc = await screenOfTile(page, spot.x, spot.y);
-      await page.touchscreen.tap(pc.x, pc.y);
       const confirm = page.getByRole('button', { name: 'Confirmar' });
-      await waitFor(async () => !(await confirm.isDisabled()), 3000, 'vista previa válida del campamento');
+      // Los aldeanos siguen trabajando junto a los árboles: un aldeano puede pisar el sitio entre la búsqueda y el
+      // toque («Hay una unidad en el sitio»). Se vuelve a buscar sitio y a tocar, hasta 3 veces, y se informa del motivo.
+      let valid = false;
+      let reason = '';
+      for (let attempt = 0; attempt < 3 && !valid; attempt++) {
+        const spot = await T(page, 'findPlacementFor', 'lumberCamp', tree.x + 3 + attempt * 2, tree.y + 3);
+        const pc = await screenOfTile(page, spot.x, spot.y);
+        await page.touchscreen.tap(pc.x, pc.y);
+        try {
+          await waitFor(async () => !(await confirm.isDisabled()), 2000, 'vista previa válida del campamento');
+          valid = true;
+        } catch {
+          reason = (await page.locator('.placing .panel-line').first().textContent().catch(() => '')) ?? '';
+        }
+      }
+      if (!valid) throw new Error(`vista previa del campamento no válida tras 3 intentos: «${reason}»`);
+      if (reason) step(`reintento de colocación (motivo anterior: «${reason}»)`);
       // La vista previa se actualiza en el siguiente fotograma de Phaser: se espera, no se lee una sola vez.
       let gi = null;
       try {
