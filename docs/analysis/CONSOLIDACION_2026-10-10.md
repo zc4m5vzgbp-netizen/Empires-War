@@ -57,7 +57,7 @@ Huérfanas sobre main: #2 docs nube · #3 nube (en pausa) · #4 edades (ages.ts)
 | Render de suelo | `GameScene.drawArtTerrain()`: hornea **todo** el mapa en RenderTextures de 16×16 casillas | Fluido en el 48×48 actual (iPhone, VIS-02) | **No escala**: crítico, R-1 |
 | Render de árboles | Una imagen por árbol, 1 o 2 por casilla de bosque (`GameScene.ts:147-160`) | — | No escala: ~10.000 imágenes en 224×224 [CÁLCULO] |
 | Render de entidades | `entityView.ts` recorre todas las entidades cada frame, sin descartar las que no están en pantalla | Smoke 4c (receta) | Adaptar: falta un manifiesto de arte único y descartar lo que no se ve |
-| Toques y selección | `picking.ts`: recorre todas las entidades | `tests/picking.test.ts`; smoke | Bien para cientos de entidades; habrá que usar un índice espacial más adelante |
+| Toques y selección | `picking.ts`: recorre todas las entidades | `tests/picking.test.ts`; smoke | Elige mal entre edificios solapados (R-11). Bien para cientos de entidades; más adelante, índice espacial |
 | Arte | UH (CC-BY-SA 3.0): suelo, árboles, recursos, Centro urbano, molino y aldeano de reserva. 0 A.D. (CC-BY-SA 3.0): aldeana, campamentos y militares | Pruebas de contrato y de licencia; `tests/characterization-art-contract.test.ts` (nueva) | Bien. **El color de jugador va fijo en azul** (R-4) |
 | Interfaz | Preact (`App.tsx`, `store.ts`, `styles.css`) | Smoke; capturas 15–17 | Adaptar: el panel ocupa ~47 % en iPhone (I-5) y el menú de construir no escala a 20 edificios |
 | Proceso | `REQUIREMENTS_MATRIX.md` (estados antiguos), `DELIVERY_LEDGER.md` (en otra rama), `QUALITY_AND_CONSOLIDATION_PROTOCOL.md` (#19), informes por PR | — | **Fragmentado:** tres registros en tres ramas (R-6) |
@@ -126,6 +126,8 @@ Los atlas solo entran por el manifiesto. Así una migración de arte, un nuevo c
 | R-7 | Hay copias de archivos entre ramas (`villagerArt.ts`, `campArt.ts`). | [PROBADO] `diff` | Bajo | Fusionar en lugar de copiar. Editar cada archivo en un solo lado. |
 | R-8 | Ramas huérfanas con trabajo útil: #4 edades (`src/content/ages.ts`), #5 manifest para instalar en iPhone (el v1.1 §35 lo recomienda por el borrado de datos de Safari a los 7 días). | [PROBADO] `git diff --stat` | Medio | Inventario en la etapa 1: integrar, sustituir o archivar, con motivo. |
 | R-9 | Licencias: todo el arte es CC-BY-SA 3.0, que obliga a atribución y a compartir igual **los derivados del arte** (los atlas). No obliga al código. | [DOC] CREDITS y LICENSE-0AD | Bajo | Mantener los créditos visibles (el panel los tapa: M-7) y los atlas bajo CC-BY-SA. No mezclar arte con licencia desconocida (`game-art-pipeline-license-audit`). |
+| **R-11** | Selección por toque entre edificios solapados: `picking.ts` recorre los edificios por ID y «baja» el toque hasta la altura de pared, sin mirar cuál está dibujado delante. | [PROBADO] `tests/characterization-picking.test.ts`: con un campamento delante del Centro Urbano, tocar su tejado (40 px sobre el centro) **selecciona el Centro Urbano**. Marcado como `todo` (DEF-PICK-01): no rompe el CI. | Medio. Empeora con ciudades densas. | Etapa 3: forma táctil por sprite en el manifiesto y elegir el edificio dibujado más delante. |
+| R-12 | El paso 4c del smoke (mi receta) fue intermitente. | [PROBADO] Ejecuciones 38078152830 (WebKit) y 38078679400 (Chromium): fallos de la prueba, no del juego. Corregido y en verde en 38079686193. Detalle en `RECETA_INTEGRACION_VISUAL.md`. | Bajo (corregido) | La prueba reintenta y diagnostica. Repetición en curso para confirmar la estabilidad. |
 | R-10 | Memoria de los atlas 0 A.D. en el iPhone: ~16 MB la aldeana, más el militar cuando entre. | [CÁLCULO] 2048²×4 | Bajo hoy | Medir en el iPhone físico. Opción futura: atlas comprimidos o en dos páginas. |
 
 **Dependencias.**
@@ -193,7 +195,7 @@ Cada etapa es un PR propio, sobre la rama de integración única, revertible con
 - Los 20 PR, con las relaciones de ancestros de las 20 ramas principales.
 
 **Pruebas ejecutadas en esta sesión**
-- 76/76 unitarias en la rama de análisis, incluidas 4 nuevas de caracterización del contrato de arte: cada fotograma que pide el código existe en su atlas, y también todo fotograma de suelo que puede generar el terreno de 48 y 160.
+- 77 unitarias en la rama de análisis (76 superadas y 1 `todo` documentado, DEF-PICK-01), incluidas 4 de caracterización del contrato de arte y 2 de selección por toque. Las de arte comprueban que cada fotograma que pide el código existe en su atlas, incluido todo fotograma de suelo que puede generar el terreno de 48 y 160.
 - Bancos: `scripts/bench/sim-scale.ts` (datos en `docs/analysis/data/sim-scale-recursos-{densos,dispersos}.md`) y `scripts/bench/render-scale.ts` (`data/render-scale.md`).
 - CI de la receta: 38076689613 (verde) y capturas 38076691119.
 
