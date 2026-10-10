@@ -250,6 +250,17 @@ def render(repo: str, cfg: dict, out: str) -> None:
         bpy.context.scene.render.filepath = path
         bpy.ops.render.render(write_still=True)
 
+    def debug(tag, objs):
+        bpy.context.view_layer.update()
+        for o in objs:
+            if o.type != 'MESH':
+                continue
+            pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+            lo = [round(min(p[i] for p in pts), 2) for i in range(3)]
+            hi = [round(max(p[i] for p in pts), 2) for i in range(3)]
+            par = (o.parent.name if o.parent else '-') + ('/' + o.constraints[0].subtarget if o.constraints else '')
+            print('OBJ', tag, o.name, par, lo, hi, flush=True)
+
     def pivot(cam):
         p = world_to_camera_view(bpy.context.scene, cam, Vector((0, 0, 0)))
         return {'x': round(p.x, 4), 'y': round(1 - p.y, 4)}
@@ -264,6 +275,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
             root = root.parent
         root.scale = (u.get('scale', 2.0),) * 3
         size = tuple(u.get('size', [128, 128]))
+        debug(u['key'], objs)
         frame_box(cam, objs, size)
         cam.data.shift_y = u.get('shift_y', 0.25)
         meta[u['key']] = {'pivot': pivot(cam), 'anims': {}}
@@ -315,6 +327,7 @@ def render(repo: str, cfg: dict, out: str) -> None:
                 o.scale = (scale,) * 3
                 o.rotation_euler = (0, 0, math.radians(b.get('rotate', 0)))
         size = tuple(b.get('size', [384, 384]))
+        debug(b['key'], objs)
         frame_box(cam, objs, size)
         cam.data.shift_y = b.get('shift_y', 0.15)
         meta[b['key']] = {'pivot': pivot(cam), 'tiles': b['tiles']}
