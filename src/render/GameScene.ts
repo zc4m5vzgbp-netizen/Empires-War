@@ -14,6 +14,8 @@ import { BUILDING_ORIGIN, MARKER_KEY, buildingKey, createEntityTextures, footpri
 import { EntityView, type PrevPositions } from './entityView.ts';
 import { tileToWorld } from './iso.ts';
 import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './textures.ts';
+import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
+import { addGallery } from './gallery.ts';
 
 export interface GameSceneDeps {
   world: WorldState;
@@ -49,11 +51,19 @@ export class GameScene extends Phaser.Scene {
     this.deps = deps;
   }
 
+  preload(): void {
+    preloadArt(this);
+  }
+
   create(): void {
     createProvisionalTextures(this);
     createEntityTextures(this);
-    this.drawTerrain();
-    this.entities = new EntityView(this);
+    const art = artReady(this);
+    if (art) createArtAnimations(this);
+    if (art) this.drawArtTerrain();
+    else this.drawTerrain();
+    if (art && new URLSearchParams(location.search).has('galeria')) addGallery(this);
+    this.entities = new EntityView(this, art);
     this.ghostFootprint = this.add.image(0, 0, footprintKey(2, true)).setVisible(false).setDepth(1e6);
     this.ghost = this.add.image(0, 0, buildingKey('mill')).setVisible(false).setAlpha(0.55).setDepth(1e6 + 1);
     this.marker = this.add.image(0, 0, MARKER_KEY).setVisible(false).setDepth(1e6 - 1);
@@ -72,6 +82,36 @@ export class GameScene extends Phaser.Scene {
         if (kind === TerrainKind.Forest) {
           // Los árboles se ordenan por su base: los de delante tapan a los de detrás.
           this.add.image(pos.x, pos.y + 6, TREE_KEY).setOrigin(0.5, 0.9).setDepth(pos.y + 6);
+        }
+      }
+    }
+  }
+
+  /** Terreno con el arte del atlas: hierba variada, tierra, agua y bosques con árboles mezclados. */
+  private drawArtTerrain(): void {
+    const { map } = this.deps.world;
+    const frameFor = (kind: number, x: number, y: number) =>
+      kind === TerrainKind.Water
+        ? 'tile/water/0'
+        : kind === TerrainKind.Dirt
+          ? 'tile/dirt/0'
+          : `tile/grass/${Math.floor(tileNoise(x, y) * GRASS_VARIANTS)}`;
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        const kind = terrainAt(map, x, y) ?? TerrainKind.Grass;
+        const pos = tileToWorld(x, y);
+        const frame = frameFor(kind, x, y);
+        const o = pivot(this, frame);
+        this.add.image(pos.x, pos.y, ART, frame).setOrigin(o.x, o.y).setDepth(-1e6);
+        if (kind === TerrainKind.Forest) {
+          // Dos árboles por casilla con desplazamiento estable: bosque denso, como en un RTS clásico.
+          for (let i = 0; i < 2; i++) {
+            const tree = TREES[Math.floor(tileNoise(x, y, i + 1) * TREES.length)]!;
+            const jx = (tileNoise(x, y, i + 7) - 0.5) * 20;
+            const jy = (i === 0 ? -5 : 5) + (tileNoise(x, y, i + 11) - 0.5) * 4;
+            const t = pivot(this, `tree/${tree}`);
+            this.add.image(pos.x + jx, pos.y + jy, ART, `tree/${tree}`).setOrigin(t.x, t.y).setDepth(pos.y + jy);
+          }
         }
       }
     }
@@ -113,7 +153,14 @@ export class GameScene extends Phaser.Scene {
     const c = tileToWorld(origin.x + (size - 1) / 2, origin.y + (size - 1) / 2);
     const o = BUILDING_ORIGIN[placing.building] ?? { x: 0.5, y: 0.8 };
     this.ghostFootprint.setTexture(footprintKey(size, check?.valid ?? false)).setPosition(c.x, c.y).setVisible(true);
-    this.ghost.setTexture(buildingKey(placing.building)).setOrigin(o.x, o.y).setPosition(c.x, c.y).setVisible(true);
+    if (artReady(this)) {
+      const a = ART_BUILDINGS[placing.building];
+      const p = pivot(this, a.frame);
+      this.ghost.setTexture(ART, a.frame).setOrigin(p.x, p.y).setScale(size / a.drawnSize);
+    } else {
+      this.ghost.setTexture(buildingKey(placing.building)).setOrigin(o.x, o.y).setScale(1);
+    }
+    this.ghost.setPosition(c.x, c.y).setVisible(true);
   }
 
   publishHud(): void {
