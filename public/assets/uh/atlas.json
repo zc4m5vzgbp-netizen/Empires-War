@@ -871,7 +871,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.71875
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_in/135/0.png"
 },
@@ -896,7 +896,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_in/225/0.png"
 },
@@ -921,7 +921,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.71875
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_in/315/0.png"
 },
@@ -946,7 +946,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_in/45/0.png"
 },
@@ -971,7 +971,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_out/135/0.png"
 },
@@ -996,7 +996,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_out/225/0.png"
 },
@@ -1021,7 +1021,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_out/315/0.png"
 },
@@ -1046,7 +1046,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/curve_out/45/0.png"
 },
@@ -1071,7 +1071,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/straight/135/0.png"
 },
@@ -1096,7 +1096,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/straight/225/0.png"
 },
@@ -1121,7 +1121,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/straight/315/0.png"
 },
@@ -1146,7 +1146,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_beach-shallow0/straight/45/0.png"
 },
@@ -1171,7 +1171,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_in/135/0.png"
 },
@@ -1196,7 +1196,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_in/225/0.png"
 },
@@ -1221,7 +1221,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_in/315/0.png"
 },
@@ -1246,7 +1246,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.65625
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_in/45/0.png"
 },
@@ -1271,7 +1271,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.71875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_out/135/0.png"
 },
@@ -1296,7 +1296,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_out/225/0.png"
 },
@@ -1321,7 +1321,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.71875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_out/315/0.png"
 },
@@ -1346,7 +1346,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/curve_out/45/0.png"
 },
@@ -1371,7 +1371,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/straight/135/0.png"
 },
@@ -1396,7 +1396,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/straight/225/0.png"
 },
@@ -1421,7 +1421,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.671875
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/straight/315/0.png"
 },
@@ -1446,7 +1446,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.65625
 },
 "source": "content/gfx/base/moderate/ts_grass-beach0/straight/45/0.png"
 },
@@ -1471,7 +1471,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.71875
 },
 "source": "content/gfx/base/moderate/ts_beach0/straight/45/0.png"
 },
@@ -1496,7 +1496,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass0/straight/45/0.png"
 },
@@ -1521,7 +1521,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass1/straight/45/0.png"
 },
@@ -1546,7 +1546,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass2/straight/45/0.png"
 },
@@ -1571,7 +1571,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass3/straight/45/0.png"
 },
@@ -1596,7 +1596,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass4/straight/45/0.png"
 },
@@ -1621,7 +1621,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.640625
 },
 "source": "content/gfx/base/moderate/ts_grass5/straight/45/0.png"
 },
@@ -1646,7 +1646,7 @@
 },
 "pivot": {
 "x": 0.5,
-"y": 0.625
+"y": 0.734375
 },
 "source": "content/gfx/base/moderate/ts_shallow0/straight/45/0.png"
 },
