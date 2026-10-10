@@ -14,6 +14,7 @@ import { mapBounds, tileToWorld } from './render/iso.ts';
 import { findPlacementNear } from './simulation/placement.ts';
 import { createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
 import { App } from './ui/App.tsx';
+import { countMilitaryAnimations } from './render/militaryArt.ts';
 import { createHudStore } from './ui/store.ts';
 import './ui/styles.css';
 
@@ -251,6 +252,6 @@ if (new URLSearchParams(location.search).has('test')) {
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
     textures: () => scene?.textures.getTextureKeys() ?? [],
-    animCount: (prefix: string) => (scene ? [...scene.anims.anims.keys()].filter((k: string) => k.startsWith(prefix)).length : 0),
+    militaryAnimCount: () => (scene ? countMilitaryAnimations(scene) : 0),
   };
 }

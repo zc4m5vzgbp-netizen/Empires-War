@@ -364,7 +364,7 @@ async function galleryFlow() {
     await page.goto(URL + '&galeria=1', { waitUntil: 'load' });
     await waitFor(() => page.evaluate(() => Boolean(window.__EW_TEST__)), 15000, 'juego con galería');
     await waitFor(async () => (await T(page, 'textures')).includes('mil'), 15000, 'atlas militar cargado');
-    const n = await T(page, 'animCount', 'mil/');
+    const n = await T(page, 'militaryAnimCount');
     if (n !== 2 * 4 * 8) throw new Error(`animaciones militares: ${n} (se esperaban 64)`);
     r.steps.push(`atlas militar cargado; ${n} animaciones (2 unidades × 4 × 8 direcciones)`);
     await T(page, 'centerOnTile', 18, 27);

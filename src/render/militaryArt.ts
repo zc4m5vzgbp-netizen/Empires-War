@@ -51,3 +51,10 @@ export function createMilitaryAnimations(scene: Phaser.Scene): number {
 export function galleryEnabled(): boolean {
   return new URLSearchParams(location.search).has('galeria') || import.meta.env.VITE_GALERIA === '1';
 }
+
+/** Cuántas animaciones militares existen (API pública de Phaser; lo usa la prueba de navegador). */
+export function countMilitaryAnimations(scene: Phaser.Scene): number {
+  let n = 0;
+  for (const unit of MIL_UNITS) for (const anim of MIL_ANIMS) for (const dir of DIRS) if (scene.anims.exists(milAnimKey(unit, anim, dir))) n++;
+  return n;
+}
