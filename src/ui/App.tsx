@@ -23,6 +23,7 @@ const millCost = Object.entries(BUILDINGS.mill.cost)
 export function App({ store, actions, build, touch }: { store: HudStore; actions: AppActions; build: string; touch: boolean }) {
   const [s, setState] = useState(store.get());
   const [menuOpen, setMenuOpen] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     const unsubscribe = store.subscribe(setState);
@@ -76,7 +77,13 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
         </div>
       )}
 
-      <section class="panel" aria-label="Selección">
+      <section class={`panel ${panelCollapsed && !place ? "panel-collapsed" : ""}`} aria-label="Selección">
+        {!place && (
+          <button type="button" class="panel-toggle" aria-label={panelCollapsed ? "Mostrar panel de selección" : "Ocultar panel de selección"} aria-expanded={!panelCollapsed} onClick={() => setPanelCollapsed(!panelCollapsed)}>
+            {panelCollapsed ? `▲ ${sel.kind === "none" ? "Órdenes" : sel.title}` : "▼ Ocultar panel"}
+          </button>
+        )}
+        {(!panelCollapsed || !!place) && (
         {place ? (
           <div class="placing">
             <p class="panel-title">Construir {place.name}</p>
@@ -121,6 +128,7 @@ export function App({ store, actions, build, touch }: { store: HudStore; actions
               <button type="button" onClick={actions.deselect} aria-label="Quitar selección">Quitar selección</button>
             </div>
           </div>
+        )}
         )}
       </section>
 
