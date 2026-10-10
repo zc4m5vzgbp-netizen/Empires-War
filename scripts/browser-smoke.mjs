@@ -35,10 +35,10 @@ async function open(page) {
     ['0ad-villager', ['eco/villager/build/0/0']],
     ['0ad-camps', ['camp/lumberCamp', 'camp/miningCamp']],
   ]) {
-    const assetBase = new URL(`assets/${folder}/`, BASE).href;
+    const assetBase = new globalThis.URL(`assets/${folder}/`, BASE).href;
     const [png, json] = await Promise.all([
-      page.request.get(new URL('atlas.png', assetBase).href),
-      page.request.get(new URL('atlas.json', assetBase).href),
+      page.request.get(new globalThis.URL('atlas.png', assetBase).href),
+      page.request.get(new globalThis.URL('atlas.json', assetBase).href),
     ]);
     if (!png.ok() || !json.ok()) throw new Error(`Atlas ${folder} inaccesible: PNG ${png.status()}, JSON ${json.status()}`);
     const image = await png.body();
