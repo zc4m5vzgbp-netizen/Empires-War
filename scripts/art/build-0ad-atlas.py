@@ -10,6 +10,7 @@ Los renders salen al doble de densidad; aquí se reducen a la escala del juego (
 Cada unidad se recorta con un mismo rectángulo para todos sus fotogramas, así el ancla (los pies) no salta.
 """
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -18,6 +19,8 @@ from PIL import Image
 
 SCALE = 0.5
 DIRS = list(range(0, 360, 45))
+# Ancho (px del render) del degradado que suaviza la sombra donde la corta el borde del render.
+SHADOW_FADE = int(os.environ.get('EW_SHADOW_FADE', '24'))
 
 
 def clean(im: Image.Image) -> Image.Image:
@@ -27,11 +30,56 @@ def clean(im: Image.Image) -> Image.Image:
     return Image.merge('RGBA', (r, g, b, a))
 
 
+def fade_shadow(im: Image.Image, edges: set[str], width: int = SHADOW_FADE) -> Image.Image:
+    """La sombra (píxeles negros semitransparentes del captador de sombras) se desvanece cerca de los bordes
+    del render que la cortan (`edges`: left/right/bottom): así no termina en una línea recta. No toca la figura
+    (píxeles con color o casi opacos), ni el ancla ni el tamaño del fotograma."""
+    if width <= 0 or not edges:
+        return im
+    import numpy as np
+    a = np.asarray(im).copy()
+    h, w = a.shape[:2]
+    ramp = np.ones((h, w))
+    x = np.arange(w)[None, :]
+    y = np.arange(h)[:, None]
+    if 'left' in edges:
+        ramp = np.minimum(ramp, np.clip(x / width, 0, 1))
+    if 'right' in edges:
+        ramp = np.minimum(ramp, np.clip((w - 1 - x) / width, 0, 1))
+    if 'bottom' in edges:
+        ramp = np.minimum(ramp, np.clip((h - 1 - y) / width, 0, 1))
+    shadow = (a[..., :3].max(axis=2) <= 8) & (a[..., 3] < 230)
+    a[..., 3] = np.where(shadow, (a[..., 3] * ramp).astype(np.uint8), a[..., 3])
+    return Image.fromarray(a, 'RGBA')
+
+
+def shadow_edges(im: Image.Image) -> set[str]:
+    """Bordes (izquierdo, derecho, inferior) donde el encuadre corta una sombra visible."""
+    import numpy as np
+    a = np.asarray(im)
+    out = set()
+    for name, e in (('left', a[:, 0]), ('right', a[:, -1]), ('bottom', a[-1, :])):
+        if ((e[:, :3].max(axis=1) <= 8) & (e[:, 3] >= 48)).any():
+            out.add(name)
+    return out
+
+
+def edge_cuts(im: Image.Image) -> tuple[bool, bool]:
+    """¿El encuadre corta la figura (opaca) o una sombra visible? Bordes izquierdo, derecho e inferior."""
+    import numpy as np
+    a = np.asarray(im)
+    edges = [a[:, 0], a[:, -1], a[-1, :]]
+    opaque = any((e[:, 3] >= 200).any() for e in edges)
+    shadow = any(((e[:, :3].max(axis=1) <= 8) & (e[:, 3] >= 48)).any() for e in edges)
+    return opaque, shadow
+
+
 def main(src: Path, out: Path, prefix: str = 'mil') -> None:
     meta = json.loads((src / 'meta.json').read_text())
     items = []  # (clave, imagen, pivote x/y en píxeles de la imagen final)
     touches_top = {}
     touches_edge = {}
+    edge_report = {}  # fotogramas cuyo encuadre corta la figura o una sombra visible
     for key, m in meta.items():
         if 'anims' in m:
             paths = [(f'{prefix}/{key}/{a}/{d}/{i}', src / key / a / str(d) / f'{i}.png')
@@ -39,6 +87,11 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
         else:
             paths = [(f'{prefix}/{key}', src / key / 'idle.png')]
         ims = [(k, clean(Image.open(p).convert('RGBA'))) for k, p in paths]
+        # Mismos bordes suavizados en todos los fotogramas de la unidad: la sombra no cambia de largo al animarse.
+        cut = set().union(*(shadow_edges(im) for _, im in ims))
+        ims = [(k, fade_shadow(im, cut)) for k, im in ims]
+        cuts = [edge_cuts(im) for _, im in ims]
+        edge_report[key] = {'opaque': sum(o for o, _ in cuts), 'shadow': sum(s for _, s in cuts), 'frames': len(cuts)}
         # ¿Algún fotograma toca el borde superior del render? Entonces la figura está cortada.
         touches_top[key] = any(im.split()[3].crop((0, 0, im.width, 1)).getbbox() is not None for _, im in ims)
         # Cualquier borde (izquierda, derecha, abajo): la imagen estaría recortada.
@@ -110,7 +163,7 @@ def main(src: Path, out: Path, prefix: str = 'mil') -> None:
         len({by_key[f'{prefix}/{u}/walk/270/{i}'].tobytes() for i in range(n['walk'])}) > 1 for u, n in units.items())
     (out / 'atlas.json').write_text(json.dumps({'frames': frames, 'meta': {
         'image': 'atlas.png', 'size': {'w': W, 'h': H}, 'scale': '1', 'source': commit,
-        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top, 'duplicateAnims': duplicates, 'touchesEdge': touches_edge}}, separators=(',', ':')), encoding='utf-8')
+        'license': 'CC-BY-SA-3.0', 'units': units, 'walkDistinct': walk_distinct, 'figureHeights': figure_heights, 'touchesTop': touches_top, 'duplicateAnims': duplicates, 'touchesEdge': touches_edge, 'edgeCuts': edge_report, 'shadowFade': SHADOW_FADE}}, separators=(',', ':')), encoding='utf-8')
     if (src / 'LICENSE-0AD.txt').exists():
         shutil.copy(src / 'LICENSE-0AD.txt', out / 'LICENSE-0AD.txt')
     print(f'{len(placed)} fotogramas · atlas {W}x{H} · {(out / "atlas.png").stat().st_size // 1024} KiB')
