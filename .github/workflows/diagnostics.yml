@@ -22,3 +22,4 @@ jobs:
           npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           node scripts/perf-probe.mjs
+          if [ -f scripts/perf-audit.mjs ]; then node scripts/perf-audit.mjs; fi

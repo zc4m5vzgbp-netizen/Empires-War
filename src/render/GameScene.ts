@@ -59,8 +59,10 @@ export class GameScene extends Phaser.Scene {
   preload(): void {
     preloadArt(this);
     // Aldeana y campamentos: parte de la partida (auditoría de integración). El arte militar sigue siendo perezoso.
-    preloadVillagerArt(this);
-    preloadCampArt(this);
+    // Solo diagnóstico de rendimiento (auditoría): ?sinEco=1 / ?sinCamp=1 desactivan cada atlas.
+    const q = new URLSearchParams(location.search);
+    if (!q.has('sinEco')) preloadVillagerArt(this);
+    if (!q.has('sinCamp')) preloadCampArt(this);
     if (galleryEnabled()) preloadMilitary(this);
   }
 

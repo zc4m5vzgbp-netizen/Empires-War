@@ -216,8 +216,11 @@ async function mobileFlow(browserType, name) {
       await page.touchscreen.tap(pc.x, pc.y);
       const confirm = page.getByRole('button', { name: 'Confirmar' });
       await waitFor(async () => !(await confirm.isDisabled()), 3000, 'vista previa válida del campamento');
-      const gi = await T(page, 'ghostInfo');
-      if (gi?.texture !== 'camp' || gi.frame !== 'camp/lumberCamp' || !gi.visible) throw new Error(`vista previa sin arte del campamento: ${JSON.stringify(gi)}`);
+      // La vista previa se actualiza en el siguiente fotograma de Phaser: se espera, no se lee una sola vez.
+      let gi = null;
+      try {
+        await waitFor(async () => { gi = await T(page, 'ghostInfo'); return gi?.visible && gi.texture === 'camp' && gi.frame === 'camp/lumberCamp'; }, 5000, 'vista previa con arte del campamento');
+      } catch (e) { throw new Error(`${e.message}: ${JSON.stringify(gi)}`); }
       step('vista previa del campamento con su atlas');
       await confirm.tap();
       const campOf = (s) => Object.values(s.entities).find((e) => e.kind === 'building' && e.type === 'lumberCamp');
