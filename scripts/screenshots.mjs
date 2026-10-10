@@ -93,6 +93,11 @@ async function tapTile(page, x, y, lift = 0) {
   await desk.evaluate(() => window.__EW_TEST__.centerOnTile(21, 27));
   await sleep(1500);
   await desk.screenshot({ path: `${OUT}/12-escritorio-galeria.png` });
+  // Aldeanas haciendo cada tarea (fila de la galería).
+  await desk.evaluate(() => window.__EW_TEST__.centerOnTile(13, 21));
+  await desk.evaluate(() => window.__EW_TEST__.setPaused?.(false));
+  await sleep(1200);
+  await desk.screenshot({ path: `${OUT}/13-escritorio-aldeano-tareas.png` });
   await browser.close();
 }
 console.log('Capturas listas');
