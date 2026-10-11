@@ -255,6 +255,16 @@ async function mobileFlow(browserType, name) {
     await waitFor(async () => (await T(page, 'world')).tick > tick0, 3000, 'reanudar');
     step('guardar en pausa conserva la pausa');
 
+    // Comprobar que los botones de ambos campamentos existen en la partida real.
+    const builderNow = (await T(page, 'world')).entities[v.id];
+    p = await screenOfTile(page, builderNow.x, builderNow.y, 16);
+    await page.touchscreen.tap(p.x, p.y);
+    await waitFor(async () => (await T(page, 'selection')).includes(v.id), 3000, 'constructor seleccionado');
+    for (const label of ['Campamento maderero', 'Campamento minero']) {
+      await page.getByRole('button', { name: `Construir ${label}`, exact: false }).waitFor({ timeout: 3000 });
+    }
+    step('controles táctiles de campamentos visibles');
+
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
     await sleep(2500);
     r.fpsAfter = Number((await page.locator('.stats dd').allTextContents())[0]);
