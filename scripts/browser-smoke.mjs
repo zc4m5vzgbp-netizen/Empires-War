@@ -4,7 +4,7 @@
 import { chromium, devices, webkit } from 'playwright';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/Empires-War/';
-const URL = `${BASE}?test=1`;
+const GAME_URL = `${BASE}?test=1`;
 const phone = devices['iPhone 15 Pro Max'] ?? { viewport: { width: 430, height: 932 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 
 const T = (page, fn, ...args) => page.evaluate(([f, a]) => window.__EW_TEST__[f](...a), [fn, args]);
@@ -28,7 +28,7 @@ async function readStockpileUi(page) {
 
 async function open(page) {
   const started = Date.now();
-  await page.goto(URL, { waitUntil: 'load' });
+  await page.goto(GAME_URL, { waitUntil: 'load' });
   // Regresión: los atlas reales deben estar publicados y contener los fotogramas esperados.
   // Una compilación correcta no detecta por sí sola rutas de imágenes rotas.
   for (const [folder, expected] of [
