@@ -1,5 +1,5 @@
-import { BUILDINGS } from '../content/economy.ts';
-import type { Building, EntityId } from '../simulation/types.ts';
+import { BUILDINGS, type BuildingType } from '../content/economy.ts';
+import type { EntityId } from '../simulation/types.ts';
 import { entityList, type WorldState } from '../simulation/world.ts';
 import { BUILDING_WALL, VILLAGER_BODY_OFFSET } from './entityTextures.ts';
 import { TILE_H, tileToWorld, worldToTile } from './iso.ts';
@@ -18,7 +18,7 @@ const VILLAGER_HIT_RADIUS = 20;
  * grande no tapa con su sombra o su silueta los toques destinados a lo que tiene alrededor.
  * Devuelve la profundidad de dibujo del edificio (para elegir el de delante) o null si no lo toca.
  */
-export function buildingHitDepth(e: Pick<Building, 'type' | 'x' | 'y'>, wx: number, wy: number): number | null {
+export function buildingHitDepth(e: { type: BuildingType; x: number; y: number }, wx: number, wy: number): number | null {
   const size = BUILDINGS[e.type].size;
   const wall = BUILDING_WALL[e.type];
   // Casilla (con decimales) del punto sin bajar. Bajar ℓ píxeles suma ℓ/32 a x y a y de la casilla.
