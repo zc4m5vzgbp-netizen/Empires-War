@@ -1,8 +1,8 @@
 import { BUILDINGS } from '../content/economy.ts';
-import type { EntityId } from '../simulation/types.ts';
+import type { Building, EntityId } from '../simulation/types.ts';
 import { entityList, type WorldState } from '../simulation/world.ts';
 import { BUILDING_WALL, VILLAGER_BODY_OFFSET } from './entityTextures.ts';
-import { tileToWorld, worldToTile } from './iso.ts';
+import { TILE_H, tileToWorld, worldToTile } from './iso.ts';
 
 // Qué hay bajo un punto del mundo dibujado. Matemática pura sobre el estado (solo lectura).
 
@@ -10,6 +10,27 @@ export type Pick = { kind: 'villager' | 'building' | 'resource'; id: EntityId } 
 
 /** Radio (px a zoom 1) en el que un toque cuenta como «sobre el aldeano». Generoso para dedos. */
 const VILLAGER_HIT_RADIUS = 20;
+
+/**
+ * Área interactiva de un edificio, separada de su dibujo: la huella (rombo de casillas) extruida hacia arriba hasta
+ * la altura de pared BUILDING_WALL. Un punto la toca si, bajándolo entre 0 y esa altura, cae dentro de la huella.
+ * El dibujo puede ser algo más ancho o alto (tejados, pilas); esa parte no responde, a propósito: así un edificio
+ * grande no tapa con su sombra o su silueta los toques destinados a lo que tiene alrededor.
+ * Devuelve la profundidad de dibujo del edificio (para elegir el de delante) o null si no lo toca.
+ */
+export function buildingHitDepth(e: Pick<Building, 'type' | 'x' | 'y'>, wx: number, wy: number): number | null {
+  const size = BUILDINGS[e.type].size;
+  const wall = BUILDING_WALL[e.type];
+  // Casilla (con decimales) del punto sin bajar. Bajar ℓ píxeles suma ℓ/32 a x y a y de la casilla.
+  const t = worldToTile(wx, wy);
+  const lo = (v0: number, c: number) => 32 * (c - 0.5 - v0);
+  const hi = (v0: number, c: number) => 32 * (c + size - 0.5 - v0);
+  const from = Math.max(0, lo(t.x, e.x), lo(t.y, e.y));
+  const to = Math.min(wall, hi(t.x, e.x), hi(t.y, e.y));
+  if (from > to || from >= Math.min(hi(t.x, e.x), hi(t.y, e.y))) return null;
+  const c = tileToWorld(e.x + (size - 1) / 2, e.y + (size - 1) / 2);
+  return c.y + (size * TILE_H) / 2;
+}
 
 export function pickAt(world: WorldState, wx: number, wy: number): Pick {
   let best: Pick = null;
@@ -29,16 +50,15 @@ export function pickAt(world: WorldState, wx: number, wy: number): Pick {
     const t = worldToTile(wx, y);
     return { x: Math.round(t.x), y: Math.round(t.y) };
   };
+  // Edificios: entre todos los que contienen el punto en su ÁREA INTERACTIVA, gana el que se dibuja delante
+  // (mayor profundidad, la misma que usa EntityView). Antes ganaba el de menor ID (DEF-PICK-01).
+  let hit: { id: number; depth: number } | null = null;
   for (const e of entityList(world)) {
-    if (e.kind === 'building') {
-      const size = BUILDINGS[e.type].size;
-      // Se acepta tocar la base o las paredes (el punto bajado a la altura de la base).
-      for (const lift of [0, BUILDING_WALL[e.type] * 0.5, BUILDING_WALL[e.type]]) {
-        const t = tileAt(wy + lift);
-        if (t.x >= e.x && t.x < e.x + size && t.y >= e.y && t.y < e.y + size) return { kind: 'building', id: e.id };
-      }
-    }
+    if (e.kind !== 'building') continue;
+    const depth = buildingHitDepth(e, wx, wy);
+    if (depth !== null && (!hit || depth > hit.depth || (depth === hit.depth && e.id > hit.id))) hit = { id: e.id, depth };
   }
+  if (hit) return { kind: 'building', id: hit.id };
   const t = tileAt(wy);
   const t2 = tileAt(wy + 10); // el arbusto se dibuja algo por encima de su casilla
   for (const e of entityList(world)) {
