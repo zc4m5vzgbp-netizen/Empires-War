@@ -41,6 +41,9 @@ jobs:
       - name: Pruebas
         run: set -o pipefail; npm test 2>&1 | tee -a ci.log
 
+      - name: Benchmark navegación (CPU GitHub, no iPhone)
+        run: set -o pipefail; npx tsx scripts/benchmark-navigation.ts 2>&1 | tee -a navigation-benchmark.log
+
       - name: Compilar
         run: set -o pipefail; npm run build 2>&1 | tee -a ci.log
 
