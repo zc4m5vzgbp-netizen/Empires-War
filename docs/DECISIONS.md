@@ -74,3 +74,16 @@ Combinación verificada: typecheck, pruebas y compilación pasan con estas versi
 | Reacción ante amenaza por línea de visión (propuesta v1.1) | Daño recibido o enemigo a ≤ 6 casillas atacando a un aliado | v2 §3.3 |
 | Vados para casi todas las unidades (v1.1) | Solo exploradores y caballería ligera | v2 §3.6 |
 | Sin capital (v1.1) | Capital transferible; su destrucción no causa derrota | v2 §3.1 |
+
+## Decisiones de producto confirmadas el 11 de octubre de 2026 (prevalecen sobre omisiones de v2.0)
+
+Estas decisiones fueron confirmadas expresamente por el usuario al resolver H-1 a H-4 de `docs/analysis/CONSOLIDACION_2026-10-10.md`. Se conserva `docs/MASTER_DESIGN.md` v2.0 como documento histórico literal; este registro contiene las modificaciones vigentes hasta preparar una revisión consolidada y aprobada. **No confundir requisito aprobado con funcionalidad implementada o probada.**
+
+| ID | Decisión vinculante | Alcance temporal | Evidencia de implementación |
+|---|---|---|---|
+| D-006 (H-1) | Conservar **todos** los trucos del v1.1: recursos, población, edad/construcción/investigación instantáneas, modificación de terreno, superunidades, bonificación del 20 % de estadísticas, quitar niebla y demás trucos allí definidos. **Solo jugador humano**; la IA nunca obtiene ventajas por los trucos del jugador. | **Posterior a la primera versión completa** | Requisito confirmado; no se declara implementado |
+| D-007 (H-2) | Conservar comandantes y héroes: dirigir ejércitos, mayor resistencia, habilidades fijas y sin niveles. | **Posterior a la primera versión completa** | Requisito confirmado; no se declara implementado |
+| D-008 (H-3) | Conservar prioridades automáticas de aldeanos y punto de reunión para aldeanos desocupados. No altera los puntos de reunión normales de edificios, que siguen en la versión base. | **Posterior a la primera versión completa** | Requisito confirmado; no se declara implementado |
+| D-009 (H-4) | Objetivo de **600 unidades totales para el jugador y 300 unidades totales por IA**, contando aldeanos y militares; límites configurables, disponibles en modo normal (no solo trucos). Sigue vigente la población por viviendas. | **Primera versión completa**, condicionado a benchmarks, especialmente iPhone 15 Pro Max | Objetivo, **no capacidad demostrada** |
+
+**Precedencia:** estas cuatro decisiones explícitas sustituyen las formulaciones incompatibles o los aplazamientos distintos de `MASTER_DESIGN.md` v2.0. No autorizan fusionar ramas ni modificar `main`. Referencia operativa: Linear EMP-10.
