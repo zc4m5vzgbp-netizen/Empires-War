@@ -4,7 +4,7 @@
  * Each scenario gets a fresh occupancy; no benchmark data enters WorldState.
  */
 import { performance } from 'node:perf_hooks';
-import { pathToAdjacent, pathToTile } from '../src/simulation/pathfinding.ts';
+import { findPath, octile, pathToAdjacent, pathToTile } from '../src/simulation/pathfinding.ts';
 import type { Occupancy } from '../src/simulation/grid.ts';
 
 function makeMap(size: number, disconnected: boolean): Occupancy {
@@ -18,7 +18,7 @@ function makeMap(size: number, disconnected: boolean): Occupancy {
   return { width: size, height: size, blocked };
 }
 
-function bench(size: number, agents: number, disconnected: boolean): void {
+function bench(size: number, agents: number, disconnected: boolean, baseline = false): void {
   const occ = makeMap(size, disconnected);
   const start = { x: 3, y: Math.floor(size / 2) };
   const target = { x: size - 4, y: Math.floor(size / 2) };
@@ -27,9 +27,11 @@ function bench(size: number, agents: number, disconnected: boolean): void {
   for (let i = 0; i < agents; i++) {
     const t0 = performance.now();
     // Alternate tile and building-adjacent searches to exercise both APIs.
-    const path = i % 2 === 0
-      ? pathToTile(occ, start, target)
-      : pathToAdjacent(occ, start, { x: target.x, y: target.y, w: 1, h: 1 });
+    const path = baseline
+      ? findPath(occ, start, (x, y) => x === target.x && y === target.y, (x, y) => octile(target.x - x, target.y - y))
+      : i % 2 === 0
+        ? pathToTile(occ, start, target)
+        : pathToAdjacent(occ, start, { x: target.x, y: target.y, w: 1, h: 1 });
     durations.push(performance.now() - t0);
     if (path !== null) reachable++;
   }
@@ -39,6 +41,7 @@ function bench(size: number, agents: number, disconnected: boolean): void {
     map: `${size}x${size}`,
     agents,
     scenario: disconnected ? 'disconnected' : 'reachable',
+    method: baseline ? 'raw-A-star-reference' : 'optimized',
     reachable,
     totalMs: Number(sum.toFixed(2)),
     meanMs: Number((sum / agents).toFixed(3)),
@@ -54,3 +57,7 @@ bench(224, 600, true);
 bench(480, 600, true);
 bench(224, 30, false);
 bench(480, 10, false);
+
+// Reference on a small disconnected map only: raw A* can be very expensive at 480x480.
+bench(48, 10, true, true);
+bench(48, 10, true);
