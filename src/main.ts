@@ -55,7 +55,10 @@ const gameEl = document.getElementById('game');
 const uiEl = document.getElementById('ui');
 if (!gameEl || !uiEl) throw new Error('Faltan los contenedores #game o #ui en index.html');
 
-const world = createWorld({ seed: TEST_MAP.seed, size: TEST_MAP.size });
+// Solo pruebas de rendimiento (?test=1&mapa=N): tamaño de mapa distinto del de prueba. Sin ?test=1 no cambia nada.
+const testParams = new URLSearchParams(location.search);
+const testMapSize = testParams.has('test') ? Number(testParams.get('mapa')) : 0;
+const world = createWorld({ seed: TEST_MAP.seed, size: testMapSize >= 48 && testMapSize <= 512 ? testMapSize : TEST_MAP.size });
 const startZoom = Math.min(window.innerWidth, window.innerHeight) < 600 ? 0.8 : 1.1;
 const camera = createCameraModel(mapBounds(world.map.width, world.map.height), { minZoom: 0.35, maxZoom: 2.5, zoom: startZoom });
 // La cámara empieza sobre el Centro Urbano y los arbustos.
@@ -254,5 +257,10 @@ if (new URLSearchParams(location.search).has('test')) {
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     paused: () => scene?.clock.paused ?? false,
     objectCount: () => scene?.children.list.length ?? 0,
+    /** Rendimiento gráfico: texturas del suelo, objetos y árboles en la escena (solo medición). */
+    renderStats: () => scene?.renderStats() ?? null,
+    setZoom: (z: number) => {
+      camera.zoom = Math.min(camera.maxZoom, Math.max(camera.minZoom, z));
+    },
   };
 }

@@ -162,6 +162,25 @@ export class GameScene extends Phaser.Scene {
     cam.centerOn(this.deps.camera.cx, this.deps.camera.cy);
   }
 
+  /**
+   * Solo medición (gancho ?test=1): memoria que reservan las texturas de render del suelo (ancho × alto × 4 bytes),
+   * número de objetos en la escena, árboles e imágenes visibles. No mide la memoria real de la GPU.
+   */
+  renderStats() {
+    let renderTextures = 0;
+    let renderTextureBytes = 0;
+    let trees = 0;
+    let visible = 0;
+    for (const o of this.children.list) {
+      if ((o as Phaser.GameObjects.Components.Visible).visible) visible++;
+      if (o instanceof Phaser.GameObjects.RenderTexture) {
+        renderTextures++;
+        renderTextureBytes += o.width * o.height * 4;
+      } else if (o instanceof Phaser.GameObjects.Image && String(o.frame?.name ?? '').startsWith('tree/')) trees++;
+    }
+    return { objects: this.children.list.length, visible, renderTextures, renderTextureMB: Math.round(renderTextureBytes / 1048576), trees };
+  }
+
   showMarker(tile: Tile): void {
     if (!this.marker) return;
     const p = tileToWorld(tile.x, tile.y);
