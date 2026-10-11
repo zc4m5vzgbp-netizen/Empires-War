@@ -11,6 +11,52 @@ const DIRS = [
 ] as const;
 const SQRT2 = Math.SQRT2;
 
+/**
+ * Componentes transitables con la misma regla diagonal que A*.
+ * Cache por identidad de Occupancy: cuando cambia un obstáculo, la simulación
+ * reconstruye la ocupación y obtiene otra identidad (sin datos en el guardado).
+ */
+const connectivityCache = new WeakMap<Occupancy, Int32Array>();
+
+function connectivity(occ: Occupancy): Int32Array {
+  const cached = connectivityCache.get(occ);
+  if (cached) return cached;
+  const { width, height } = occ;
+  const components = new Int32Array(width * height);
+  const queue = new Int32Array(width * height);
+  let component = 0;
+  for (let start = 0; start < components.length; start++) {
+    if (occ.blocked[start] || components[start]) continue;
+    component++;
+    let head = 0;
+    let tail = 0;
+    queue[tail++] = start;
+    components[start] = component;
+    while (head < tail) {
+      const node = queue[head++]!;
+      const x = node % width;
+      const y = (node - x) / width;
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (!isWalkable(occ, nx, ny)) continue;
+        if (dx && dy && (!isWalkable(occ, x + dx, y) || !isWalkable(occ, x, y + dy))) continue;
+        const next = ny * width + nx;
+        if (components[next]) continue;
+        components[next] = component;
+        queue[tail++] = next;
+      }
+    }
+  }
+  connectivityCache.set(occ, components);
+  return components;
+}
+
+function componentAt(occ: Occupancy, components: Int32Array, tile: Tile): number {
+  if (tile.x < 0 || tile.y < 0 || tile.x >= occ.width || tile.y >= occ.height) return 0;
+  return components[tile.y * occ.width + tile.x] ?? 0;
+}
+
 /** Distancia octil: coste mínimo entre dos casillas con movimiento en 8 direcciones. */
 export function octile(dx: number, dy: number): number {
   const ax = Math.abs(dx);
@@ -146,6 +192,12 @@ export function nearestWalkable(occ: Occupancy, x: number, y: number, maxRadius 
 export function pathToTile(occ: Occupancy, from: Tile, target: Tile): Tile[] | null {
   const goal = nearestWalkable(occ, target.x, target.y);
   if (!goal) return null;
+  // Evita recorrer todo el mapa con A* cuando el destino está aislado.
+  // La salida ocupada sigue siendo válida para A*: no descartarla aquí.
+  if (isWalkable(occ, from.x, from.y)) {
+    const components = connectivity(occ);
+    if (componentAt(occ, components, from) !== componentAt(occ, components, goal)) return null;
+  }
   return findPath(
     occ,
     from,
@@ -156,6 +208,21 @@ export function pathToTile(occ: Occupancy, from: Tile, target: Tile): Tile[] | n
 
 /** Camino hasta cualquier casilla transitable pegada a un rectángulo (recurso o edificio). */
 export function pathToAdjacent(occ: Occupancy, from: Tile, rect: { x: number; y: number; w: number; h: number }): Tile[] | null {
+  if (isWalkable(occ, from.x, from.y)) {
+    const components = connectivity(occ);
+    const sourceComponent = componentAt(occ, components, from);
+    let reachable = false;
+    // A* acepta cualquier casilla adyacente al rectángulo, incluso en diagonal.
+    for (let y = rect.y - 1; y <= rect.y + rect.h && !reachable; y++) {
+      for (let x = rect.x - 1; x <= rect.x + rect.w; x++) {
+        if (isAdjacentToRect(x, y, rect) && componentAt(occ, components, { x, y }) === sourceComponent) {
+          reachable = true;
+          break;
+        }
+      }
+    }
+    if (!reachable) return null;
+  }
   return findPath(
     occ,
     from,
