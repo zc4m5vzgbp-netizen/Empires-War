@@ -49,6 +49,8 @@ async function open(page) {
   }
   await page.waitForSelector('#game canvas', { timeout: 15000 });
   await page.waitForFunction(() => Number(document.querySelector('.stats dd')?.textContent) > 0 && window.__EW_TEST__, null, { timeout: 20000 });
+  const art = await T(page, 'artStatus');
+  if (Object.values(art).some((ok) => !ok)) throw new Error(`Atlas o animación sin integrar: ${JSON.stringify(art)}`);
   return Date.now() - started;
 }
 
