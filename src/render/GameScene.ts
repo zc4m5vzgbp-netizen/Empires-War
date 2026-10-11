@@ -17,6 +17,7 @@ import { TILE_VARIANTS, TREE_KEY, createProvisionalTextures, tileKey } from './t
 import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimations, pivot, preloadArt, tileNoise } from './art.ts';
 import { addGallery } from './gallery.ts';
 import { groundFrame } from './terrainArt.ts';
+import { TerrainStreamer } from './terrainStreamer.ts';
 import { preloadVillagerArt, createVillagerAnimations } from './villagerArt.ts';
 import { CAMP, CAMP_FRAMES, CAMP_DRAWN_TILES, campPivot, preloadCampArt } from './campArt.ts';
 
@@ -44,6 +45,8 @@ export class GameScene extends Phaser.Scene {
   private marker: Phaser.GameObjects.Image | null = null;
   private markerMs = 0;
   private readonly terrainPainters: (() => void)[] = [];
+  /** Suelo y árboles por bloques visibles (render normal). Null con el pintado completo antiguo o sin atlas. */
+  private terrain: TerrainStreamer | null = null;
   private frames = 0;
   private ticks = 0;
   private stepTotalMs = 0;
@@ -67,7 +70,10 @@ export class GameScene extends Phaser.Scene {
     const art = artReady(this);
     if (art) createArtAnimations(this);
     createVillagerAnimations(this);
-    if (art) this.drawArtTerrain();
+    // Suelo: por bloques visibles. «?test=1&suelo=horneado» conserva el pintado completo anterior solo para comparar.
+    const legacyTerrain = new URLSearchParams(location.search).has('test') && new URLSearchParams(location.search).get('suelo') === 'horneado';
+    if (art && legacyTerrain) this.drawArtTerrain();
+    else if (art) this.terrain = new TerrainStreamer(this, this.deps.world.map);
     else this.drawTerrain();
     if (art && new URLSearchParams(location.search).has('galeria')) addGallery(this);
     this.entities = new EntityView(this, art);
@@ -75,7 +81,17 @@ export class GameScene extends Phaser.Scene {
     this.ghost = this.add.image(0, 0, buildingKey('mill')).setVisible(false).setAlpha(0.55).setDepth(1e6 + 1);
     this.marker = this.add.image(0, 0, MARKER_KEY).setVisible(false).setDepth(1e6 - 1);
     this.applyCamera();
+    this.updateTerrain();
     this.publishHud();
+  }
+
+  /** Rectángulo visible en coordenadas de mundo, calculado del modelo de cámara (el de Phaser va un fotograma atrás). */
+  private updateTerrain(): void {
+    if (!this.terrain) return;
+    const { cx, cy, zoom } = this.deps.camera;
+    const w = this.scale.width / zoom;
+    const h = this.scale.height / zoom;
+    this.terrain.update({ x: cx - w / 2, y: cy - h / 2, w, h }, zoom);
   }
 
   private drawTerrain(): void {
@@ -172,13 +188,13 @@ export class GameScene extends Phaser.Scene {
     let trees = 0;
     let visible = 0;
     for (const o of this.children.list) {
-      if ((o as Phaser.GameObjects.Components.Visible).visible) visible++;
+      if ((o as unknown as { visible?: boolean }).visible) visible++;
       if (o instanceof Phaser.GameObjects.RenderTexture) {
         renderTextures++;
         renderTextureBytes += o.width * o.height * 4;
       } else if (o instanceof Phaser.GameObjects.Image && String(o.frame?.name ?? '').startsWith('tree/')) trees++;
     }
-    return { objects: this.children.list.length, visible, renderTextures, renderTextureMB: Math.round(renderTextureBytes / 1048576), trees };
+    return { objects: this.children.list.length, visible, renderTextures, renderTextureMB: Math.round(renderTextureBytes / 1048576), trees, terrain: this.terrain?.stats() ?? null };
   }
 
   showMarker(tile: Tile): void {
@@ -254,6 +270,7 @@ export class GameScene extends Phaser.Scene {
     const alpha = this.clock.paused ? 1 : Math.min(1, this.clock.accumulatorMs / (1000 / this.clock.tickRate));
 
     this.applyCamera();
+    this.updateTerrain();
     this.entities?.sync(world, this.prev, alpha, new Set(this.deps.controller.selection));
     this.updateGhost();
     if (this.marker && this.markerMs > 0) {

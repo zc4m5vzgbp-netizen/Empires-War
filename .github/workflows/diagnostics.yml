@@ -22,21 +22,31 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - name: FPS por etapa
+        continue-on-error: true
         run: |
           npx playwright install --with-deps chromium webkit
           npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           node scripts/perf-probe.mjs
       - name: Rendimiento gráfico por tamaño de mapa
+        if: always()
         run: |
           npx vite preview --port 4173 --strictPort > preview2.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           node scripts/perf-render.mjs "${{ github.event.inputs.sizes || '48,160,224,320,480' }}" 3 | tee perf-render.md
           echo "::notice title=Rendimiento gráfico::$(tr '\n' ' ' < perf-render.md)"
+      - name: Comparación visual del suelo (antes/después, mismo build)
+        if: always()
+        run: |
+          node scripts/visual-compare.mjs | tee visual-compare.md
+          echo "::notice title=Comparación visual::$(tr '\n' ' ' < visual-compare.md)"
       - name: Guardar la tabla de rendimiento gráfico
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: perf-render
-          path: perf-render.md
+          path: |
+            perf-render.md
+            visual-compare.md
+            visual-compare/
           if-no-files-found: ignore

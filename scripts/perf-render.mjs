@@ -37,7 +37,7 @@ const rafFps = (page, ms, pan, w = 48) =>
     [ms, pan, w],
   );
 
-async function measure(type, env, size) {
+async function measure(type, env, size, extra) {
   const browser = await type.launch();
   const context = await browser.newContext(env);
   const page = await context.newPage();
@@ -46,7 +46,7 @@ async function measure(type, env, size) {
   page.on('pageerror', (e) => out.errors.push(e.message));
   try {
     const t0 = Date.now();
-    await page.goto(`${BASE}&mapa=${size}`, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(`${BASE}&mapa=${size}${extra}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => window.__EW_TEST__ && Number(document.querySelector('.stats dd')?.textContent) > 0, null, { timeout: 180000 });
     out.bootMs = Date.now() - t0;
     await sleep(1000);
@@ -71,16 +71,17 @@ const PROFILES = [
   ['WebKit iPhone', webkit, { ...devices['iPhone 15 Pro Max'] }],
   ['Chromium escritorio', chromium, { viewport: { width: 1280, height: 800 } }],
 ];
-const lines = ['| Perfil | Mapa | Arranque (ms) | Texturas suelo (MB) | Objetos | Árboles | FPS reposo | FPS desplazando (peor frame ms) | FPS zoom 0,35 (peor) | Texturas suelo tras zoom (MB) | Heap JS (MB) | Fallos |', '|---|---|---|---|---|---|---|---|---|---|---|---|'];
+const MODES = (process.env.EW_MODES ?? 'antes,despues').split(',').map((m) => (m === 'antes' ? ['antes (horneado)', '&suelo=horneado'] : ['después (bloques)', '']));
+const lines = ['| Perfil | Suelo | Mapa | Arranque (ms) | Texturas suelo (MB) | Objetos | Árboles | FPS reposo | FPS desplazando (peor frame ms) | FPS zoom 0,35 (peor) | Texturas suelo tras zoom (MB) | Heap JS (MB) | Fallos |', '|---|---|---|---|---|---|---|---|---|---|---|---|---|'];
 for (const [name, type, env] of PROFILES) {
-  for (const size of SIZES) {
+  for (const [mode, extra] of MODES) for (const size of SIZES) {
     const runs = [];
-    for (let i = 0; i < (size >= 320 ? 1 : RUNS); i++) runs.push(await measure(type, env, size));
+    for (let i = 0; i < (size >= 320 ? 1 : RUNS); i++) runs.push(await measure(type, env, size, extra));
     const ok = runs.filter((r) => r.rest);
     const m = (f) => median(ok.map(f).filter((v) => v != null));
     const fails = runs.filter((r) => r.crashed || !r.rest).length;
     lines.push(
-      `| ${name} | ${size} | ${m((r) => r.bootMs)} | ${m((r) => r.stats?.renderTextureMB)} | ${m((r) => r.stats?.objects)} | ${m((r) => r.stats?.trees)} | ${m((r) => r.rest?.fps)} | ${m((r) => r.pan?.fps)} (${m((r) => r.pan?.worstFrameMs)}) | ${m((r) => r.zoomMin?.fps)} (${m((r) => r.zoomMin?.worstFrameMs)}) | ${m((r) => r.statsZoomMin?.renderTextureMB)} | ${m((r) => r.jsHeapMB)} | ${fails}/${runs.length}${runs.some((r) => r.crashed) ? ' (pestaña caída)' : ''}${runs.flatMap((r) => r.errors).length ? ' · ' + runs.flatMap((r) => r.errors)[0] : ''} |`,
+      `| ${name} | ${mode} | ${size} | ${m((r) => r.bootMs)} | ${m((r) => r.stats?.renderTextureMB)} | ${m((r) => r.stats?.objects)} | ${m((r) => r.stats?.trees)} | ${m((r) => r.rest?.fps)} | ${m((r) => r.pan?.fps)} (${m((r) => r.pan?.worstFrameMs)}) | ${m((r) => r.zoomMin?.fps)} (${m((r) => r.zoomMin?.worstFrameMs)}) | ${m((r) => r.statsZoomMin?.renderTextureMB)} | ${m((r) => r.jsHeapMB)} | ${fails}/${runs.length}${runs.some((r) => r.crashed) ? ' (pestaña caída)' : ''}${runs.flatMap((r) => r.errors).length ? ' · ' + runs.flatMap((r) => r.errors)[0] : ''} |`,
     );
     console.error(lines.at(-1));
   }
