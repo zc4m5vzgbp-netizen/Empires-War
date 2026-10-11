@@ -274,6 +274,9 @@ async function mobileFlow(browserType, name) {
     const campConfirm = page.getByRole('button', { name: 'Confirmar' });
     await waitFor(async () => !(await campConfirm.isDisabled()), 3000, 'vista previa de campamento');
     await campConfirm.tap();
+    const campWorld = await T(page, 'world');
+    const campCount = Object.values(campWorld.entities).filter(e => e.type === campType).length;
+    if (campCount !== 1) throw new Error('cimiento de campamento ausente');
 
 
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
