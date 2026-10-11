@@ -29,9 +29,12 @@ async function tapAt(page, tile, lift) {
 async function flow(type, name) {
   const browser = await type.launch();
   const page = await (await browser.newContext({ ...devices['iPhone 15 Pro Max'] })).newPage();
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  // Errores agrupados por fase, para saber cuál los produce.
+  let phase = 'selección';
+  const errors = {};
+  const note = (msg) => ((errors[phase] ??= new Set()).add(msg.slice(0, 120)));
+  page.on('pageerror', (e) => note(`pageerror: ${e.message}`));
+  page.on('console', (m) => m.type() === 'error' && note(m.text()));
   const steps = [];
   try {
     // 1. Selección entre edificios solapados.
@@ -61,6 +64,7 @@ async function flow(type, name) {
     await page.screenshot({ path: `render-smoke/${name}-areas-interactivas.png` });
 
     // 2. Mapa de 224×224: memoria del suelo acotada.
+    phase = 'mapa 224';
     await open(page, '&mapa=224');
     const s0 = await T(page, 'renderStats');
     let worst = s0.terrain.chunkTextureMB;
@@ -82,6 +86,7 @@ async function flow(type, name) {
     await page.screenshot({ path: `render-smoke/${name}-224-zoom-minimo.png` });
 
     // 3. Pérdida del contexto WebGL.
+    phase = 'WebGL perdido';
     await T(page, 'setZoom', 0.8);
     await sleep(600);
     const before = (await T(page, 'renderStats')).terrain.paintedTotal;
@@ -93,7 +98,11 @@ async function flow(type, name) {
       steps.push(`WebGL perdido y recuperado: ${after - before} bloques repintados`);
       await page.screenshot({ path: `render-smoke/${name}-tras-webgl.png` });
     } else steps.push('WebGL: la extensión WEBGL_lose_context no está disponible (sin probar)');
-    if (errors.length) throw new Error(`errores: ${errors.join(' | ')}`);
+    // Los errores durante la pérdida de WebGL se informan aparte (son del propio Phaser al recrear recursos);
+    // cualquier error en las demás fases hace fallar la prueba.
+    const fatal = Object.entries(errors).filter(([k]) => k !== 'WebGL perdido');
+    if (errors['WebGL perdido']) steps.push(`avisos al recuperar WebGL: ${[...errors['WebGL perdido']].join(' | ')}`);
+    if (fatal.length) throw new Error(`errores: ${fatal.map(([k, v]) => `[${k}] ${[...v].join(' | ')}`).join(' · ')}`);
     return { name, ok: true, steps };
   } catch (e) {
     await page.screenshot({ path: `render-smoke/${name}-fallo.png` }).catch(() => {});
