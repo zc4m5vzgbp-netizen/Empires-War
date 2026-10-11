@@ -9,7 +9,7 @@ on:
         default: '48,160,224,320,480'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   fps:
@@ -40,6 +40,21 @@ jobs:
         run: |
           node scripts/visual-compare.mjs | tee visual-compare.md
           echo "::notice title=Comparación visual::$(tr '\n' ' ' < visual-compare.md)"
+      - name: Capturas de la prueba del render (áreas interactivas, zoom mínimo, WebGL)
+        if: always()
+        run: node scripts/render-smoke.mjs || true
+      - name: Publicar capturas en la rama «capturas-render»
+        if: always()
+        run: |
+          mkdir -p out && cp -r visual-compare render-smoke out/ 2>/dev/null || true
+          cp perf-render.md visual-compare.md out/ 2>/dev/null || true
+          cd out
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "Capturas de render de ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/capturas-render
       - name: Guardar la tabla de rendimiento gráfico
         if: always()
         uses: actions/upload-artifact@v4
