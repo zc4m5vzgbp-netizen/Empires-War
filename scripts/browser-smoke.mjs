@@ -268,6 +268,12 @@ async function mobileFlow(browserType, name) {
     const campLabel = campType === 'lumberCamp' ? 'Campamento maderero' : 'Campamento minero';
     const woodBeforeCamp = (await T(page, 'world')).players['1'].stockpile.wood;
     await page.getByRole('button', { name: `Construir ${campLabel}`, exact: false }).tap();
+    const campSpot = await T(page, 'findPlacement', 18, 29);
+    p = await screenOfTile(page, campSpot.x, campSpot.y);
+    await page.touchscreen.tap(p.x, p.y);
+    const campConfirm = page.getByRole('button', { name: 'Confirmar' });
+    await waitFor(async () => !(await campConfirm.isDisabled()), 3000, 'vista previa de campamento');
+    await campConfirm.tap();
 
 
     // FPS en reposo al final del ciclo (sin capturas ni consultas durante la medición).
