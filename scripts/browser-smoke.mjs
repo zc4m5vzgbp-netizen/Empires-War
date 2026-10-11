@@ -4,7 +4,7 @@
 import { chromium, devices, webkit } from 'playwright';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/Empires-War/';
-const URL = `${BASE}?test=1`;
+const GAME_URL = `${BASE}?test=1`;
 const phone = devices['iPhone 15 Pro Max'] ?? { viewport: { width: 430, height: 932 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 
 const T = (page, fn, ...args) => page.evaluate(([f, a]) => window.__EW_TEST__[f](...a), [fn, args]);
@@ -28,7 +28,25 @@ async function readStockpileUi(page) {
 
 async function open(page) {
   const started = Date.now();
-  await page.goto(URL, { waitUntil: 'load' });
+  await page.goto(GAME_URL, { waitUntil: 'load' });
+  // Regresión: los atlas reales deben estar publicados y contener los fotogramas esperados.
+  // Una compilación correcta no detecta por sí sola rutas de imágenes rotas.
+  for (const [folder, expected] of [
+    ['0ad-villager', ['eco/villager/build/0/0']],
+    ['0ad-camps', ['camp/lumberCamp', 'camp/miningCamp']],
+  ]) {
+    const assetBase = new globalThis.URL(`assets/${folder}/`, BASE).href;
+    const [png, json] = await Promise.all([
+      page.request.get(new globalThis.URL('atlas.png', assetBase).href),
+      page.request.get(new globalThis.URL('atlas.json', assetBase).href),
+    ]);
+    if (!png.ok() || !json.ok()) throw new Error(`Atlas ${folder} inaccesible: PNG ${png.status()}, JSON ${json.status()}`);
+    const image = await png.body();
+    if (image.length < 8 || image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a')
+      throw new Error(`Atlas ${folder}: PNG inválido`);
+    const atlas = await json.json();
+    for (const frame of expected) if (!atlas.frames?.[frame]) throw new Error(`Atlas ${folder}: falta fotograma ${frame}`);
+  }
   await page.waitForSelector('#game canvas', { timeout: 15000 });
   await page.waitForFunction(() => Number(document.querySelector('.stats dd')?.textContent) > 0 && window.__EW_TEST__, null, { timeout: 20000 });
   return Date.now() - started;

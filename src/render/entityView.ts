@@ -19,6 +19,7 @@ import { TILE_H, tileToWorld } from './iso.ts';
 import { ART, ART_BUILDINGS, TREES, type Dir, dirFromTileDelta, pivot } from './art.ts';
 import { ECO, villagerAnimKey, villagerFrame } from './villagerArt.ts';
 import { villagerVisualAction, VILLAGER_ECO_ORIGIN } from './villagerVisualState.ts';
+import { CAMP, CAMP_FRAMES, CAMP_DRAWN_TILES, campPivot } from './campArt.ts';
 
 // Dibuja las entidades a partir del estado. Solo lee la simulación; nunca la modifica.
 
@@ -115,8 +116,18 @@ export class EntityView {
       };
     }
     const size = BUILDINGS[e.type].size;
-    if (this.art) {
-      const a = ART_BUILDINGS[e.type];
+    if (this.scene.textures.exists(CAMP) && e.type in CAMP_FRAMES) {
+      const frame = CAMP_FRAMES[e.type as keyof typeof CAMP_FRAMES];
+      const o = campPivot(this.scene, frame);
+      return {
+        kind: e.kind,
+        main: add.image(0, 0, CAMP, frame).setOrigin(o.x, o.y).setScale(size / CAMP_DRAWN_TILES),
+        foundation: add.image(0, 0, foundationKey(size)),
+        ring: add.image(0, 0, outlineKey(size)).setVisible(false),
+      };
+    }
+    if (this.art && e.type in ART_BUILDINGS) {
+      const a = ART_BUILDINGS[e.type]!;
       const o = pivot(this.scene, a.frame);
       return {
         kind: e.kind,
@@ -184,7 +195,7 @@ export class EntityView {
         const front = c.y + (size * TILE_H) / 2;
         const ratio = e.complete ? 1 : constructionRatio(e.type, e.buildProgress);
         view.main.setPosition(c.x, c.y).setDepth(front).setAlpha(e.complete ? 1 : 0.15 + 0.6 * ratio);
-        const anim = this.art ? ART_BUILDINGS[e.type].anim : undefined;
+        const anim = this.art && e.type in ART_BUILDINGS ? ART_BUILDINGS[e.type]?.anim : undefined;
         if (anim && e.complete && view.anim !== anim) {
           (view.main as Phaser.GameObjects.Sprite).play(anim);
           view.anim = anim;

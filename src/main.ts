@@ -194,6 +194,10 @@ render(
       zoomIn: () => zoomCentered(INPUT.buttonZoomStep),
       zoomOut: () => zoomCentered(1 / INPUT.buttonZoomStep),
       recenter: () => Object.assign(camera, home),
+      startBuild: (building) => {
+        controller.startPlacing(building);
+        scene?.publishHud();
+      },
       startBuildMill: () => {
         controller.startPlacing('mill');
         scene?.publishHud();

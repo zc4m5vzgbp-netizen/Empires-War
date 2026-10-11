@@ -19,7 +19,7 @@ export const GRASS_VARIANTS = 6;
 export const TREES = ['maple0', 'maple1', 'maple2', 'maple3', 'spruce0', 'spruce1', 'tupelo0', 'tupelo1', 'tupelo2', 'birch0'];
 
 /** Edificio de la partida → fotograma del atlas y tamaño (en casillas) para el que se dibujó. */
-export const ART_BUILDINGS: Record<BuildingType, { frame: string; drawnSize: number; anim?: string }> = {
+export const ART_BUILDINGS: Partial<Record<BuildingType, { frame: string; drawnSize: number; anim?: string }>> = {
   townCenter: { frame: 'bld/townCenter', drawnSize: 3 },
   mill: { frame: 'bld/mill/0', drawnSize: 2, anim: 'bld/mill' },
 };
