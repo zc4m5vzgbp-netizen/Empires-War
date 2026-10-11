@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { h, render } from 'preact';
 import { TEST_MAP } from './content/config.ts';
-import { STARTING_STOCKPILE } from './content/economy.ts';
+import { PLAYER_ID, STARTING_STOCKPILE, type BuildingType } from './content/economy.ts';
 import { createController } from './input/controller.ts';
 import { INPUT } from './input/gestures.ts';
 import { bindPointerInput } from './input/pointerInput.ts';
@@ -12,7 +12,7 @@ import { centerCameraOn, createCameraModel, panCamera, worldToScreen, zoomCamera
 import { GameScene } from './render/GameScene.ts';
 import { mapBounds, tileToWorld } from './render/iso.ts';
 import { findPlacementNear } from './simulation/placement.ts';
-import { createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
+import { addEntity, createWorld, hashWorld, replaceWorld } from './simulation/world.ts';
 import { App } from './ui/App.tsx';
 import { createHudStore } from './ui/store.ts';
 import './ui/styles.css';
@@ -259,6 +259,21 @@ if (new URLSearchParams(location.search).has('test')) {
     objectCount: () => scene?.children.list.length ?? 0,
     /** Rendimiento gráfico: texturas del suelo, objetos y árboles en la escena (solo medición). */
     renderStats: () => scene?.renderStats() ?? null,
+    /** Solo pruebas de selección/render: coloca un edificio terminado sin pasar por las reglas de construcción. */
+    debugAddBuilding: (type: BuildingType, x: number, y: number) =>
+      addEntity(world, { kind: 'building', type, owner: PLAYER_ID, x, y, complete: true, buildProgress: 0 }),
+    /** Solo pruebas: simula que iOS descarta el contexto WebGL y lo devuelve (segundo plano). */
+    loseWebGL: async () => {
+      const canvas = document.querySelector('#game canvas') as HTMLCanvasElement | null;
+      const gl = (canvas?.getContext('webgl2') ?? canvas?.getContext('webgl')) as WebGLRenderingContext | null;
+      const ext = gl?.getExtension('WEBGL_lose_context');
+      if (!ext) return false;
+      ext.loseContext();
+      await new Promise((r) => setTimeout(r, 300));
+      ext.restoreContext();
+      await new Promise((r) => setTimeout(r, 800));
+      return true;
+    },
     setZoom: (z: number) => {
       camera.zoom = Math.min(camera.maxZoom, Math.max(camera.minZoom, z));
     },

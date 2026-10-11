@@ -54,6 +54,17 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://localhost:4173/Empires-War/ > /dev/null && break; sleep 1; done
           set -o pipefail; npm run smoke:browser 2>&1 | tee -a ci.log
 
+      - name: Prueba de navegador del render (selección entre edificios, suelo por bloques, WebGL perdido)
+        run: set -o pipefail; node scripts/render-smoke.mjs 2>&1 | tee -a ci.log
+
+      - name: Capturas de la prueba del render
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-smoke
+          path: render-smoke/
+          if-no-files-found: ignore
+
       - name: Resumen de resultados (anotación legible desde el móvil)
         if: always()
         run: |

@@ -18,6 +18,7 @@ import { ART, ART_BUILDINGS, GRASS_VARIANTS, TREES, artReady, createArtAnimation
 import { addGallery } from './gallery.ts';
 import { groundFrame } from './terrainArt.ts';
 import { TerrainStreamer } from './terrainStreamer.ts';
+import { drawHitAreas } from './hitAreaOverlay.ts';
 import { preloadVillagerArt, createVillagerAnimations } from './villagerArt.ts';
 import { CAMP, CAMP_FRAMES, CAMP_DRAWN_TILES, campPivot, preloadCampArt } from './campArt.ts';
 
@@ -47,6 +48,8 @@ export class GameScene extends Phaser.Scene {
   private readonly terrainPainters: (() => void)[] = [];
   /** Suelo y árboles por bloques visibles (render normal). Null con el pintado completo antiguo o sin atlas. */
   private terrain: TerrainStreamer | null = null;
+  /** Solo revisión (?test=1&areas=1): áreas interactivas de los edificios. */
+  private hitAreas: Phaser.GameObjects.Graphics | null = null;
   private frames = 0;
   private ticks = 0;
   private stepTotalMs = 0;
@@ -80,6 +83,8 @@ export class GameScene extends Phaser.Scene {
     this.ghostFootprint = this.add.image(0, 0, footprintKey(2, true)).setVisible(false).setDepth(1e6);
     this.ghost = this.add.image(0, 0, buildingKey('mill')).setVisible(false).setAlpha(0.55).setDepth(1e6 + 1);
     this.marker = this.add.image(0, 0, MARKER_KEY).setVisible(false).setDepth(1e6 - 1);
+    const q = new URLSearchParams(location.search);
+    if (q.has('test') && q.has('areas')) this.hitAreas = this.add.graphics().setDepth(1e7 - 1);
     this.applyCamera();
     this.updateTerrain();
     this.publishHud();
@@ -273,6 +278,7 @@ export class GameScene extends Phaser.Scene {
     this.updateTerrain();
     this.entities?.sync(world, this.prev, alpha, new Set(this.deps.controller.selection));
     this.updateGhost();
+    if (this.hitAreas) drawHitAreas(this.hitAreas, world);
     if (this.marker && this.markerMs > 0) {
       this.markerMs -= delta;
       this.marker.setAlpha(Math.max(0, this.markerMs / MARKER_MS)).setVisible(this.markerMs > 0);
