@@ -174,3 +174,19 @@ Regla: nada se marca `probado` si la prueba no se ejecutó de verdad. «Local» 
 | FUT-08 | Economía civil, población urbana, ciudades vivas, automatizaciones de aldeanos no clásicas (incluye la prioridad incendios → reparación → economía → reunión como especificación) | reservado |
 | FUT-09 | Expansión persistente tras victoria | reservado |
 | FUT-10 | Multijugador, cuentas y nube | reservado |
+
+## Anexo de requisitos confirmados (H-1 a H-4; 2026-10-11)
+
+**Precedencia:** las decisiones D-006 a D-009 de `docs/DECISIONS.md` son más recientes y explícitas que las omisiones o contradicciones del maestro v2.0. Las filas de abajo **no** significan implementación. Se preservan los IDs existentes; la futura unificación de estados y auditoría de la matriz se hará por separado, sin inventar pruebas.
+
+| ID | Requisito confirmado | Fase | Estado | Fuente / validación pendiente |
+|---|---|---|---|---|
+| TRA-01 | Todos los trucos previstos en v1.1; solo jugador humano, nunca IA | Posterior | pendiente | D-006; desglosar cada truco contra el texto original v1.1 y probar permisos por jugador |
+| TRA-02 | Añadir recursos, población, edad, construcción e investigación instantáneas | Posterior | pendiente | D-006; verificar catálogo exhaustivo v1.1 |
+| TRA-03 | Modificación del terreno, superunidades y bonificación del 20 % | Posterior | pendiente | D-006; pruebas de determinismo y guardado |
+| TRA-04 | Quitar niebla únicamente para jugador; sin información adicional para IA | Posterior | pendiente | D-006; pruebas de aislamiento de visión |
+| FUT-CH-01 | Comandantes y héroes: mando de ejércitos, resistencia superior, habilidades fijas, sin niveles | Posterior | pendiente | D-007; pruebas de órdenes en grupo |
+| FUT-VA-01 | Prioridades automáticas de aldeanos y reunión de aldeanos libres | Posterior | pendiente | D-008; sin sustituir puntos de reunión de edificios |
+| REN-POP-01 | 600 unidades **totales** jugador y 300 **totales** por IA, aldeanos + militares, configurables, modo normal | Primera versión completa, sujeto a rendimiento | pendiente | D-009; benchmark 224×224 y 480×480, pruebas físicas iPhone |
+
+**Nota de estado:** `pendiente` aquí significa «requisito aprobado pero no validado como implementado». No modificar estados de filas históricas sin cotejo de código y pruebas. El protocolo definitivo de seis estados se consolidará con la auditoría integral (EMP-10).
