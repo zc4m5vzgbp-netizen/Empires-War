@@ -253,6 +253,14 @@ if (new URLSearchParams(location.search).has('test')) {
     },
     findPlacement: (x: number, y: number) => findPlacementNear(world, 'mill', x, y),
     paused: () => scene?.clock.paused ?? false,
+    // Test-only evidence that Phaser decoded both atlases and registered task animations.
+    artStatus: () => ({
+      villager: scene?.textures.exists('eco') ?? false,
+      villagerBuildFrame: scene?.textures.get('eco').has('eco/villager/build/0/0') ?? false,
+      villagerBuildAnimation: scene?.anims.exists('eco/villager/build/0') ?? false,
+      lumberCamp: scene?.textures.exists('camp') && scene.textures.get('camp').has('camp/lumberCamp') || false,
+      miningCamp: scene?.textures.exists('camp') && scene.textures.get('camp').has('camp/miningCamp') || false,
+    }),
     objectCount: () => scene?.children.list.length ?? 0,
   };
 }
